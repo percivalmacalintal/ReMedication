@@ -1,47 +1,27 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
+import android.content.res.Resources
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import ph.edu.dlsu.ccs.mobicom.remedication.ui.theme.ReMedicationTheme
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : ComponentActivity() {
+
+    private val medicineList : ArrayList<Medicine> = MedicineGenerator.generateData()
+
+    private lateinit var recyclerView: RecyclerView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            ReMedicationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
-        }
-    }
-}
+        setContentView(R.layout.activity_medicine)
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+        this.recyclerView = findViewById(R.id.medicineRv)
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ReMedicationTheme {
-        Greeting("Android")
+        this.recyclerView.adapter = MedicineAdapter(this.medicineList)
+
+        this.recyclerView.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false)
+        val spacing = (32 * Resources.getSystem().displayMetrics.density).toInt()
+        recyclerView.addItemDecoration(GridSpacingItemDecoration(2, spacing, true))
     }
 }
