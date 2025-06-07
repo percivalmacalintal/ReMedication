@@ -1,47 +1,32 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
-import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import ph.edu.dlsu.ccs.mobicom.remedication.ui.theme.ReMedicationTheme
+import android.os.Bundle
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class MainActivity : ComponentActivity() {
+    // Our data
+    private val checklistList: ArrayList<Checklist> = ChecklistDataGenerator.generateData()
+    // Our RecyclerView reference
+    private lateinit var recyclerView: RecyclerView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            ReMedicationTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
-        }
-    }
-}
+        setContentView(R.layout.activity_home)
 
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+        // Initialize the RecyclerView
+        this.recyclerView = findViewById(R.id.recyclerView)
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ReMedicationTheme {
-        Greeting("Android")
+        // Set the Adapter. We have to define our own Adapter so that we can properly set the
+        // information into the item layout we created. It is typical to pass the data we want
+        // displayed into the adapter. There are other variants of RecyclerViews that query data
+        // from online sources in batches (instead of passing everything), but we'll get to that
+        // when we reach accessing remote DBs.
+        this.recyclerView.adapter = ChecklistAdapter(this.checklistList)
+
+        // Set the LayoutManager. This can be set to different kinds of LayoutManagers but we're
+        // keeping things simple with a LinearLayout.
+        this.recyclerView.layoutManager = LinearLayoutManager(this)
     }
 }
