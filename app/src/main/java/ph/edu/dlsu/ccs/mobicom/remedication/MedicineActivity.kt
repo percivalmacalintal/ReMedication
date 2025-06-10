@@ -6,7 +6,7 @@ import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
-class MainActivity : ComponentActivity() {
+class MedicineActivity : ComponentActivity() {
 
     private val medicineList : ArrayList<Medicine> = MedicineGenerator.generateData()
 
