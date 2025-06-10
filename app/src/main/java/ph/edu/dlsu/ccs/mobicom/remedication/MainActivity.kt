@@ -1,32 +1,51 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
-import androidx.activity.ComponentActivity
+import android.content.Intent
 import android.os.Bundle
+import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : ComponentActivity() {
-    // Our data
     private val checklistList: ArrayList<Checklist> = ChecklistDataGenerator.generateData()
-    // Our RecyclerView reference
     private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-
-        // Initialize the RecyclerView
         this.recyclerView = findViewById(R.id.recyclerView)
-
-        // Set the Adapter. We have to define our own Adapter so that we can properly set the
-        // information into the item layout we created. It is typical to pass the data we want
-        // displayed into the adapter. There are other variants of RecyclerViews that query data
-        // from online sources in batches (instead of passing everything), but we'll get to that
-        // when we reach accessing remote DBs.
         this.recyclerView.adapter = ChecklistAdapter(this.checklistList)
-
-        // Set the LayoutManager. This can be set to different kinds of LayoutManagers but we're
-        // keeping things simple with a LinearLayout.
         this.recyclerView.layoutManager = LinearLayoutManager(this)
+
+        val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
+        bottomNav.selectedItemId = R.id.homeIt
+        bottomNav.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.homeIt -> true
+                R.id.medsIt -> {
+                    val intent = Intent(this, MedicineActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
+                    true
+                }
+                R.id.logsIt -> {
+                    //
+                    true
+                }
+                R.id.setsIt -> {
+                    //
+                    true
+                }
+                else -> false
+            }
+        }
+    }
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
+        bottomNav.selectedItemId = R.id.homeIt  // Or whatever your home item ID is
     }
 }
