@@ -1,33 +1,32 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
 import android.content.Intent
-import android.content.res.Resources
 import android.os.Bundle
+import android.widget.TextView
 import androidx.activity.ComponentActivity
-import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MedicineActivity : ComponentActivity() {
-
-    private val medicineList : ArrayList<Medicine> = MedicineGenerator.generateData()
+class LogsActivity : ComponentActivity() {
+    private val logList : ArrayList<Log> = LogsGenerator.generateData()
 
     private lateinit var recyclerView: RecyclerView
+//    private lateinit var checkTv: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_medicine)
+        setContentView(R.layout.activity_logs)
 
-        this.recyclerView = findViewById(R.id.medicineRv)
+        this.recyclerView = findViewById(R.id.logsRv)
+        this.recyclerView.adapter = LogsAdapter(this.logList)
+        this.recyclerView.layoutManager = LinearLayoutManager(this)
 
-        this.recyclerView.adapter = MedicineAdapter(this.medicineList)
+//        this.checkTv = findViewById(R.id.checkLog)
+//        this.checkTv.text = recyclerView.adapter?.itemCount.toString()
 
-        this.recyclerView.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false)
-        val spacing = (32 * Resources.getSystem().displayMetrics.density).toInt()
-        recyclerView.addItemDecoration(GridSpacingItemDecoration(2, spacing, true))
-        
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
-        bottomNav.selectedItemId = R.id.medsIt
+        bottomNav.selectedItemId = R.id.logsIt
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.homeIt -> {
@@ -37,14 +36,14 @@ class MedicineActivity : ComponentActivity() {
                     overridePendingTransition(0, 0)
                     true
                 }
-                R.id.medsIt -> true
-                R.id.logsIt -> {
-                    val intent = Intent(this, LogsActivity::class.java)
+                R.id.medsIt -> {
+                    val intent = Intent(this, MedicineActivity::class.java)
                     intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     startActivity(intent)
                     overridePendingTransition(0, 0)
                     true
                 }
+                R.id.logsIt -> true
                 R.id.setsIt -> {
                     //
                     true
@@ -57,6 +56,6 @@ class MedicineActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
-        bottomNav.selectedItemId = R.id.medsIt
+        bottomNav.selectedItemId = R.id.logsIt
     }
 }
