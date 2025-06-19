@@ -8,14 +8,16 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : ComponentActivity() {
-    private val checklistList: ArrayList<Checklist> = ChecklistDataGenerator.generateData()
+    private val sectionList: ArrayList<Section> = SectionDataGenerator.generateData()
     private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
-        this.recyclerView = findViewById(R.id.recyclerView)
-        this.recyclerView.adapter = ChecklistAdapter(this.checklistList)
+
+        this.recyclerView = findViewById(R.id.sectionRv)
+        this.recyclerView.adapter = SectionAdapter(this.sectionList)
+
         this.recyclerView.layoutManager = LinearLayoutManager(this)
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
