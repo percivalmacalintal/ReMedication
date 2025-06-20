@@ -1,5 +1,6 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
+import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.drawable.Drawable
@@ -7,8 +8,8 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
-import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.core.widget.addTextChangedListener
 import ph.edu.dlsu.ccs.mobicom.remedication.databinding.ActivityInfoBinding
@@ -41,7 +42,6 @@ class InfoActivity : ComponentActivity() {
     private var initialPosition: Int = -1
 
     private var defaultEditTextBackground: Drawable? = null
-    private var defaultSpinnerBackground: Drawable? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +64,6 @@ class InfoActivity : ComponentActivity() {
         viewBinding.endvalEt.setText(initialEndDate)
 
         defaultEditTextBackground = viewBinding.namevalEt.background
-        defaultSpinnerBackground = viewBinding.freqvalSpin.background
 
         addTextChangedListeners(viewBinding)
 
@@ -93,8 +92,14 @@ class InfoActivity : ComponentActivity() {
                 viewBinding.remvalEt.isFocusable = true
                 viewBinding.remvalEt.isFocusableInTouchMode = true
 
-                viewBinding.unitvalSpin.isEnabled = true
-                viewBinding.freqvalSpin.isEnabled = true
+
+
+                viewBinding.freqvalSpin.visibility = View.VISIBLE
+                viewBinding.unitvalSpin.visibility = View.VISIBLE
+                viewBinding.dosvalEt.visibility = View.VISIBLE
+
+                viewBinding.freqvalTv.visibility = View.GONE
+                viewBinding.dosvalTv.visibility = View.GONE
 
                 viewBinding.namevalEt.background = defaultEditTextBackground
                 viewBinding.dosvalEt.background = defaultEditTextBackground
@@ -102,44 +107,77 @@ class InfoActivity : ComponentActivity() {
                 viewBinding.startvalEt.background = defaultEditTextBackground
                 viewBinding.endvalEt.background = defaultEditTextBackground
 
-                viewBinding.unitvalSpin.background = defaultSpinnerBackground
-                viewBinding.freqvalSpin.background = defaultSpinnerBackground
+                enableSaveButtonIfChanges(viewBinding)
 
-                viewBinding.saveBtn.visibility = Button.VISIBLE
+                viewBinding.saveBtn.visibility = View.VISIBLE
+                viewBinding.delBtn.visibility = View.VISIBLE
             } else {
                 disableEditing(viewBinding)
             }
         }
 
         viewBinding.saveBtn.setOnClickListener {
-            val updatedName = viewBinding.namevalEt.text.toString()
-            val updatedStartDate = viewBinding.startvalEt.text.toString()
-            val updatedEndDate = viewBinding.endvalEt.text.toString()
+            val updatedName = viewBinding.namevalEt.text.toString().trim()
+            val updatedDosage = viewBinding.dosvalEt.text.toString().trim()
+            val updatedRemaining = viewBinding.remvalEt.text.toString().trim()
+            val updatedStartDate = viewBinding.startvalEt.text.toString().trim()
+            val updatedEndDate = viewBinding.endvalEt.text.toString().trim()
 
-            val updatedDosage = viewBinding.dosvalEt.text.toString().toInt()
-            val updatedRemaining = viewBinding.remvalEt.text.toString().toInt()
+            if (updatedName.isEmpty() || updatedDosage.isEmpty() || updatedRemaining.isEmpty() ||
+                updatedStartDate.isEmpty() || updatedEndDate.isEmpty()) {
+
+                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
             val updatedUnit = viewBinding.unitvalSpin.selectedItem.toString()
             val updatedFrequency = viewBinding.freqvalSpin.selectedItem.toString()
 
-            val returnIntent = Intent()
-            returnIntent.putExtra(NAME_KEY, updatedName)
-            returnIntent.putExtra(DOSAGE_KEY, updatedDosage)
-            returnIntent.putExtra(UNIT_KEY, updatedUnit)
-            returnIntent.putExtra(FREQUENCY_KEY, updatedFrequency)
-            returnIntent.putExtra(REMAINING_KEY, updatedRemaining)
-            returnIntent.putExtra(START_KEY, updatedStartDate)
-            returnIntent.putExtra(END_KEY, updatedEndDate)
-            returnIntent.putExtra(POSITION_KEY, initialPosition)
-            setResult(RESULT_OK, returnIntent)
-            finish()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Confirm Changes")
+            builder.setMessage("Are you sure you want to save these changes?")
+
+            builder.setPositiveButton("Yes") { _, _ ->
+                val returnIntent = Intent()
+                returnIntent.putExtra(NAME_KEY, updatedName)
+                returnIntent.putExtra(DOSAGE_KEY, updatedDosage.toInt())
+                returnIntent.putExtra(UNIT_KEY, updatedUnit)
+                returnIntent.putExtra(FREQUENCY_KEY, updatedFrequency)
+                returnIntent.putExtra(REMAINING_KEY, updatedRemaining.toInt())
+                returnIntent.putExtra(START_KEY, updatedStartDate)
+                returnIntent.putExtra(END_KEY, updatedEndDate)
+                returnIntent.putExtra(POSITION_KEY, initialPosition)
+
+                viewBinding.dosvalTv.text = getString(R.string.dosvalTvText, updatedDosage, updatedUnit)
+
+                setResult(RESULT_OK, returnIntent)
+                finish()
+            }
+
+            builder.setNegativeButton("No") { dialog, _ ->
+                dialog.cancel()
+            }
+
+            builder.show()
         }
 
         viewBinding.delBtn.setOnClickListener {
-            val returnIntent = Intent()
-            returnIntent.putExtra(POSITION_KEY, this.intent.getIntExtra(POSITION_KEY, 0))
-            setResult(RESULT_OK, returnIntent)
-            finish()
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Confirm Deletion")
+            builder.setMessage("Are you sure you want to delete this medicine? This action cannot be undone.")
+
+            builder.setPositiveButton("Yes") { _, _ ->
+                val returnIntent = Intent()
+                returnIntent.putExtra(POSITION_KEY, this.intent.getIntExtra(POSITION_KEY, 0))
+                setResult(RESULT_OK, returnIntent)
+                finish()
+            }
+
+            builder.setNegativeButton("No") { dialog, _ ->
+                dialog.cancel()
+            }
+
+            builder.show()
         }
 
         viewBinding.closeBtn.setOnClickListener {
@@ -147,7 +185,7 @@ class InfoActivity : ComponentActivity() {
         }
 
         val units = arrayOf("mg", "ml")
-        val frequencies = arrayOf("Once a day", "Twice a day", "Three times a day", "Every other day")
+        val frequencies = arrayOf("Once a day", "Twice a day", "Three times a day")
 
         val unitAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, units)
         unitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -180,12 +218,6 @@ class InfoActivity : ComponentActivity() {
     }
 
     private fun disableEditing(viewBinding: ActivityInfoBinding) {
-        viewBinding.namevalEt.setText(initialName)
-        viewBinding.dosvalEt.setText(initialDosage)
-        viewBinding.remvalEt.setText(initialRemaining)
-        viewBinding.startvalEt.setText(initialStartDate)
-        viewBinding.endvalEt.setText(initialEndDate)
-
         viewBinding.namevalEt.isFocusable = false
         viewBinding.namevalEt.isFocusableInTouchMode = false
         viewBinding.dosvalEt.isFocusable = false
@@ -199,7 +231,18 @@ class InfoActivity : ComponentActivity() {
         viewBinding.startvalEt.setBackgroundResource(android.R.color.transparent)
         viewBinding.endvalEt.setBackgroundResource(android.R.color.transparent)
 
-        viewBinding.saveBtn.visibility = Button.GONE
+        viewBinding.freqvalSpin.visibility = View.GONE
+        viewBinding.unitvalSpin.visibility = View.GONE
+        viewBinding.dosvalEt.visibility = View.GONE
+
+        viewBinding.dosvalTv.visibility = View.VISIBLE
+        viewBinding.dosvalTv.text = getString(R.string.dosvalTvText, initialDosage, initialUnit)
+
+        viewBinding.freqvalTv.visibility = View.VISIBLE
+        viewBinding.freqvalTv.text = initialFrequency
+
+        viewBinding.saveBtn.visibility = View.GONE
+        viewBinding.delBtn.visibility = View.GONE
     }
 
     private fun showDatePickerDialog(editText: EditText, dateString: String) {
@@ -249,7 +292,15 @@ class InfoActivity : ComponentActivity() {
     }
 
     private fun enableSaveButtonIfChanges(viewBinding: ActivityInfoBinding) {
-        viewBinding.saveBtn.isEnabled = hasAnyChanges(viewBinding)
+        val saveButton = viewBinding.saveBtn
+        val isEnabled = hasAnyChanges(viewBinding)
+
+        saveButton.setTextColor(
+            if (isEnabled) android.graphics.Color.WHITE
+            else viewBinding.root.context.getColor(android.R.color.darker_gray)
+        )
+
+        saveButton.isEnabled = isEnabled
     }
 
     private fun hasAnyChanges(viewBinding: ActivityInfoBinding): Boolean {
