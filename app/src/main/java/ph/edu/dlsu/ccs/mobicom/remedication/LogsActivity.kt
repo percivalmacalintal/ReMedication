@@ -2,28 +2,23 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class LogsActivity : ComponentActivity() {
-    private val logList : ArrayList<Log> = LogsGenerator.generateData()
+    private val LogsDateList : ArrayList<LogsDate> = LogsDateGenerator.generateData()
 
     private lateinit var recyclerView: RecyclerView
-//    private lateinit var checkTv: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logs)
 
         this.recyclerView = findViewById(R.id.logsRv)
-        this.recyclerView.adapter = LogsAdapter(this.logList)
+        this.recyclerView.adapter = LogsDateAdapter(this.LogsDateList)
         this.recyclerView.layoutManager = LinearLayoutManager(this)
-
-//        this.checkTv = findViewById(R.id.checkLog)
-//        this.checkTv.text = recyclerView.adapter?.itemCount.toString()
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.logsIt

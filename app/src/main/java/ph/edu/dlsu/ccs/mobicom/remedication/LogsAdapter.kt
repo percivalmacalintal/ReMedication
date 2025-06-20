@@ -12,7 +12,8 @@ class LogsAdapter(private val data: ArrayList<Log>): Adapter<LogViewHolder>() {
     }
 
     override fun onBindViewHolder(holder: LogViewHolder, position: Int) {
-        holder.bindData(data[position])
+        val log = data[position]
+        holder.bindData(log)
     }
 
     override fun getItemCount(): Int {
