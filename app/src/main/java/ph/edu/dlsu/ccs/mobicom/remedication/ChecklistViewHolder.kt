@@ -21,11 +21,13 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
         dtv.text = checklist.dosage
         cb.isChecked = checklist.isChecked
         if (checklist.isChecked) {
+            itemView.setBackgroundColor(0xFFF6F6F6.toInt())
             iv.alpha = 0.5f
             mtv.alpha = 0.5f
             dtv.alpha = 0.5f
             cb.alpha = 0.5f
         } else {
+            itemView.setBackgroundColor(0xFFFFFFFF.toInt())
             iv.alpha = 1.0f
             mtv.alpha = 1.0f
             dtv.alpha = 1.0f
