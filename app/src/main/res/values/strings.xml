@@ -7,8 +7,10 @@
     <string name="startlblTvText">Start Date:</string>
     <string name="endlblTvText">End Date:</string>
     <string name="saveBtnText">Save Changes</string>
+    <string name="delBtnText">Delete</string>
     <string name="homeItText">Home</string>
     <string name="medsItText">Medicines</string>
     <string name="logsItText">Logs</string>
     <string name="setsItText">Settings</string>
+    <string name="dosvalTvText">%1$s %2$s</string>
 </resources>

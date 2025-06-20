@@ -32,7 +32,7 @@ class MedicineActivity : ComponentActivity() {
                 val updatedStartDate = result.data!!.getStringExtra(InfoActivity.START_KEY) ?: ""
                 val updatedEndDate = result.data!!.getStringExtra(InfoActivity.END_KEY) ?: ""
                 if (updatedName != null) {
-                    medicineList[position!!] = Medicine(R.drawable.ic_launcher_background, updatedName, updatedDosage, updatedUnit, updatedFrequency, updatedRemaining, updatedStartDate, updatedEndDate)
+                    medicineList[position!!] = Medicine(android.R.drawable.ic_menu_report_image, updatedName, updatedDosage, updatedUnit, updatedFrequency, updatedRemaining, updatedStartDate, updatedEndDate)
                     medAdapter.notifyItemChanged(position)
                 } else {
                     if (position != null) {
