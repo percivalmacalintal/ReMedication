@@ -9,7 +9,6 @@ import androidx.recyclerview.widget.RecyclerView
 
 class SectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
     private val sectionLabel: TextView = itemView.findViewById(R.id.sectionLabelTv)
-    private val lineIv: ImageView = itemView.findViewById(R.id.lineIv)
     val dropdownBtn: ImageButton = itemView.findViewById(R.id.dropdownBtn)
     val checklistRecyclerView: RecyclerView = itemView.findViewById(R.id.checklistRv)
 
@@ -19,8 +18,6 @@ class SectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
     fun bindData(section: Section) {
         sectionLabel.text = section.label
-        lineIv.setImageResource(R.drawable.line)
-        dropdownBtn.setImageResource(R.drawable.dropdown)
 
         checklistRecyclerView.visibility = if (section.isExpanded) View.VISIBLE else View.GONE
         dropdownBtn.rotation = if (section.isExpanded) 180f else 0f
