@@ -1,3 +1,16 @@
 <resources>
     <string name="app_name">ReMedication</string>
+    <string name="namelblTvText">Name:</string>
+    <string name="doselblTvText">Dosage:</string>
+    <string name="freqblTvText">Frequency:</string>
+    <string name="remlblTvText">Remaining:</string>
+    <string name="startlblTvText">Start Date:</string>
+    <string name="endlblTvText">End Date:</string>
+    <string name="saveBtnText">Save Changes</string>
+    <string name="delBtnText">Delete</string>
+    <string name="homeItText">Home</string>
+    <string name="medsItText">Medicines</string>
+    <string name="logsItText">Logs</string>
+    <string name="setsItText">Settings</string>
+    <string name="dosvalTvText">%1$s %2$s</string>
 </resources>
