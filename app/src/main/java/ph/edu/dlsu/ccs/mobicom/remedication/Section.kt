@@ -1,3 +1,9 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
-class Section (val label: String, val checklist: ArrayList<Checklist>, var isExpanded: Boolean = true)
+class Section (label: String, checklist: ArrayList<Checklist>) {
+    var label = label
+        private set
+    var checklist = checklist
+        private set
+    var isExpanded = true
+}

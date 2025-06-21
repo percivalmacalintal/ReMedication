@@ -23,7 +23,7 @@ class SectionAdapter(private val sections: List<Section>) :
         holder.bindData(section)  // Use bindData method from SectionViewHolder
 
         val adapter = ChecklistAdapter(section.checklist)
-        holder.checklistRecyclerView.adapter = adapter
+        holder.checklistRv.adapter = adapter
 
         holder.dropdownBtn.setOnClickListener {
             section.isExpanded = !section.isExpanded

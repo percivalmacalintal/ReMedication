@@ -2,27 +2,26 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 
 import android.view.View
 import android.widget.ImageButton
-import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 
 class SectionViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-    private val sectionLabel: TextView = itemView.findViewById(R.id.sectionLabelTv)
+    private val sectionLabelTv: TextView = itemView.findViewById(R.id.sectionLabelTv)
     val dropdownBtn: ImageButton = itemView.findViewById(R.id.dropdownBtn)
-    val checklistRecyclerView: RecyclerView = itemView.findViewById(R.id.checklistRv)
+    val checklistRv: RecyclerView = itemView.findViewById(R.id.checklistRv)
 
     init {
-        checklistRecyclerView.layoutManager = LinearLayoutManager(itemView.context)
+        checklistRv.layoutManager = LinearLayoutManager(itemView.context)
     }
 
     fun bindData(section: Section) {
-        sectionLabel.text = section.label
+        sectionLabelTv.text = section.label
 
-        checklistRecyclerView.visibility = if (section.isExpanded) View.VISIBLE else View.GONE
+        checklistRv.visibility = if (section.isExpanded) View.VISIBLE else View.GONE
         dropdownBtn.rotation = if (section.isExpanded) 180f else 0f
 
         val adapter = ChecklistAdapter(section.checklist)
-        checklistRecyclerView.adapter = adapter
+        checklistRv.adapter = adapter
     }
 }
