@@ -13,7 +13,7 @@ class LogsGenerator {
             val logList = ArrayList<Log>()
 
             for (i in 1..8) {
-                logList.add(Log(currentDate, currentTime, "MED NAME", i))
+                logList.add(Log(currentDate, currentTime, "MED NAME", i, "160mg"))
             }
 
             return logList
