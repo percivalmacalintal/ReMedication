@@ -34,6 +34,8 @@ class InfoActivity : ComponentActivity() {
         const val POSITION_KEY = "POSITION_KEY"
     }
 
+    private lateinit var viewBinding: ActivityInfoBinding
+
     private var isEditing = false
     private var initialName: String = ""
     private var initialDosage: String = ""
@@ -60,7 +62,7 @@ class InfoActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val viewBinding = ActivityInfoBinding.inflate(layoutInflater)
+        viewBinding = ActivityInfoBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
         initialName = this.intent.getStringExtra(NAME_KEY) ?: ""
@@ -84,7 +86,25 @@ class InfoActivity : ComponentActivity() {
 
         defaultEditTextBackground = viewBinding.namevalEt.background
 
-        addTextChangedListeners(viewBinding)
+        viewBinding.namevalEt.addTextChangedListener {
+            enableSaveButtonIfChanges(viewBinding)
+        }
+
+        viewBinding.dosvalEt.addTextChangedListener {
+            enableSaveButtonIfChanges(viewBinding)
+        }
+
+        viewBinding.remvalEt.addTextChangedListener {
+            enableSaveButtonIfChanges(viewBinding)
+        }
+
+        viewBinding.startvalEt.addTextChangedListener {
+            enableSaveButtonIfChanges(viewBinding)
+        }
+
+        viewBinding.endvalEt.addTextChangedListener {
+            enableSaveButtonIfChanges(viewBinding)
+        }
 
         viewBinding.startvalEt.setOnClickListener {
             if (isEditing) {
@@ -98,7 +118,7 @@ class InfoActivity : ComponentActivity() {
             }
         }
 
-        disableEditing(viewBinding)
+        disableEditing()
 
         viewBinding.edtBtn.setOnClickListener {
             isEditing = !isEditing
@@ -111,25 +131,32 @@ class InfoActivity : ComponentActivity() {
                 viewBinding.remvalEt.isFocusable = true
                 viewBinding.remvalEt.isFocusableInTouchMode = true
 
-                viewBinding.freqvalSp.visibility = View.VISIBLE
-                viewBinding.unitvalSp.visibility = View.VISIBLE
-                viewBinding.dosvalEt.visibility = View.VISIBLE
-
-                viewBinding.freqvalTv.visibility = View.GONE
-                viewBinding.dosvalTv.visibility = View.GONE
-
                 viewBinding.namevalEt.background = defaultEditTextBackground
                 viewBinding.dosvalEt.background = defaultEditTextBackground
                 viewBinding.remvalEt.background = defaultEditTextBackground
                 viewBinding.startvalEt.background = defaultEditTextBackground
                 viewBinding.endvalEt.background = defaultEditTextBackground
 
-                enableSaveButtonIfChanges(viewBinding)
+                viewBinding.freqvalSp.visibility = View.VISIBLE
+                viewBinding.unitvalSp.visibility = View.VISIBLE
+                viewBinding.dosvalEt.visibility = View.VISIBLE
+
+                viewBinding.dosvalTv.visibility = View.GONE
+
+                if (confirmedFrequency == "Three times a day") {
+                    viewBinding.freqvalTv.visibility = View.GONE
+                } else {
+                    viewBinding.freqvalTv.text = formatTimeOfDayOnly(confirmedTimeOfDay)
+                    viewBinding.freqvalTv.gravity = android.view.Gravity.CENTER
+                    viewBinding.freqvalTv.visibility = View.VISIBLE
+                }
 
                 viewBinding.saveBtn.visibility = View.VISIBLE
                 viewBinding.delBtn.visibility = View.VISIBLE
+
+                enableSaveButtonIfChanges(viewBinding)
             } else {
-                disableEditing(viewBinding)
+                disableEditing()
             }
         }
 
@@ -237,7 +264,6 @@ class InfoActivity : ComponentActivity() {
 
                 val newFrequency = parent.getItemAtPosition(position).toString()
 
-                // ✅ New selection: Once/Twice
                 if (newFrequency == "Once a day" || newFrequency == "Twice a day") {
                     selectedTimeOfDay.clear()
                     showTimeOfDaySelectionDialog(
@@ -256,11 +282,15 @@ class InfoActivity : ComponentActivity() {
                     return
                 }
 
-                // ✅ Handle "Three times a day"
                 confirmedFrequency = newFrequency
                 previousFreqPosition = position
                 selectedTimeOfDay = mutableListOf(0, 1, 2)
                 confirmedTimeOfDay = selectedTimeOfDay.toMutableList()
+
+                if (isEditing) {
+                    viewBinding.freqvalTv.visibility = View.GONE
+                }
+
                 enableSaveButtonIfChanges(viewBinding)
             }
             override fun onNothingSelected(parent: AdapterView<*>) {}
@@ -313,6 +343,11 @@ class InfoActivity : ComponentActivity() {
             if (nightCb.isChecked) selectedTimeOfDay.add(2)
             confirmedFrequency  = frequencyLabel
             confirmedTimeOfDay  = selectedTimeOfDay.toMutableList()
+            if (isEditing) {
+                viewBinding.freqvalTv.text = formatTimeOfDayOnly(selectedTimeOfDay)
+                viewBinding.freqvalTv.gravity = android.view.Gravity.CENTER
+                viewBinding.freqvalTv.visibility = View.VISIBLE
+            }
             onConfirm()
         }
 
@@ -323,7 +358,7 @@ class InfoActivity : ComponentActivity() {
         builder.show()
     }
 
-    private fun disableEditing(viewBinding: ActivityInfoBinding) {
+    private fun disableEditing() {
         viewBinding.namevalEt.setText(initialName)
         viewBinding.dosvalEt.setText(initialDosage)
         viewBinding.remvalEt.setText(initialRemaining)
@@ -354,6 +389,7 @@ class InfoActivity : ComponentActivity() {
 
         viewBinding.freqvalTv.visibility = View.VISIBLE
         viewBinding.freqvalTv.text = formatFrequencyLabel(initialFrequency, initialTimeOfDay)
+        viewBinding.freqvalTv.gravity = android.view.Gravity.START
 
         viewBinding.saveBtn.visibility = View.GONE
         viewBinding.delBtn.visibility = View.GONE
@@ -398,31 +434,16 @@ class InfoActivity : ComponentActivity() {
         datePickerDialog.show()
     }
 
-    private fun addTextChangedListeners(viewBinding: ActivityInfoBinding) {
-        viewBinding.namevalEt.addTextChangedListener {
-            enableSaveButtonIfChanges(viewBinding)
-        }
-
-        viewBinding.dosvalEt.addTextChangedListener {
-            enableSaveButtonIfChanges(viewBinding)
-        }
-
-        viewBinding.remvalEt.addTextChangedListener {
-            enableSaveButtonIfChanges(viewBinding)
-        }
-
-        viewBinding.startvalEt.addTextChangedListener {
-            enableSaveButtonIfChanges(viewBinding)
-        }
-
-        viewBinding.endvalEt.addTextChangedListener {
-            enableSaveButtonIfChanges(viewBinding)
-        }
-    }
-
     private fun enableSaveButtonIfChanges(viewBinding: ActivityInfoBinding) {
         val saveButton = viewBinding.saveBtn
-        val isEnabled = hasAnyChanges(viewBinding)
+        val isEnabled = viewBinding.namevalEt.text.toString() != initialName ||
+                viewBinding.dosvalEt.text.toString() != initialDosage ||
+                viewBinding.remvalEt.text.toString() != initialRemaining ||
+                viewBinding.startvalEt.text.toString() != initialStartDate ||
+                viewBinding.endvalEt.text.toString() != initialEndDate ||
+                viewBinding.unitvalSp.selectedItem?.toString() != initialUnit ||
+                viewBinding.freqvalSp.selectedItem?.toString() != initialFrequency ||
+                selectedTimeOfDay != initialTimeOfDay
 
         saveButton.setTextColor(
             if (isEnabled) android.graphics.Color.WHITE
@@ -432,14 +453,15 @@ class InfoActivity : ComponentActivity() {
         saveButton.isEnabled = isEnabled
     }
 
-    private fun hasAnyChanges(viewBinding: ActivityInfoBinding): Boolean {
-        return viewBinding.namevalEt.text.toString() != initialName ||
-                viewBinding.dosvalEt.text.toString() != initialDosage ||
-                viewBinding.remvalEt.text.toString() != initialRemaining ||
-                viewBinding.startvalEt.text.toString() != initialStartDate ||
-                viewBinding.endvalEt.text.toString() != initialEndDate ||
-                viewBinding.unitvalSp.selectedItem?.toString() != initialUnit ||
-                viewBinding.freqvalSp.selectedItem?.toString() != initialFrequency ||
-                selectedTimeOfDay != initialTimeOfDay
+    private fun formatTimeOfDayOnly(timeOfDay: List<Int>): String {
+        val timeLabels = timeOfDay.mapNotNull {
+            when (it) {
+                0 -> "Morning"
+                1 -> "Afternoon"
+                2 -> "Night"
+                else -> null
+            }
+        }
+        return timeLabels.joinToString(" & ")
     }
 }

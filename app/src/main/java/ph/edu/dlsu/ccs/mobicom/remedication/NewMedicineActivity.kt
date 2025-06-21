@@ -32,7 +32,6 @@ class NewMedicineActivity : ComponentActivity(){
 
     private lateinit var viewBinding: ActivityNewMedicineBinding
 
-
     private var selectedTimeOfDay = mutableListOf<Int>()
     private var confirmedTimeOfDay = mutableListOf<Int>()
     private var confirmedFrequency = ""
