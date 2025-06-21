@@ -58,22 +58,22 @@
                 android:id="@+id/namevalEt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
                 android:gravity="center"
                 android:inputType="text"
                 android:textSize="20sp"
                 android:textStyle="bold" />
 
-            <Button
+            <ImageButton
                 android:id="@+id/edtBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center"
+                android:background="@drawable/rounded"
                 android:backgroundTint="#FFD600"
-                android:drawableStart="@drawable/baseline_mode_edit_24"
-                android:drawableTint="#FFFFFF"
-                android:minWidth="48dp"
-                android:paddingStart="8dp"
-                android:paddingEnd="0dp" />
+                android:padding="8dp"
+                android:src="@drawable/baseline_mode_edit_24"
+                android:tint="#FFFFFF" />
 
         </LinearLayout>
 
@@ -121,7 +121,7 @@
                         android:textSize="16sp" />
 
                     <Spinner
-                        android:id="@+id/unitvalSpin"
+                        android:id="@+id/unitvalSp"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1" />
@@ -159,7 +159,7 @@
                     android:textSize="16sp" />
 
                 <Spinner
-                    android:id="@+id/freqvalSpin"
+                    android:id="@+id/freqvalSp"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" />
             </LinearLayout>

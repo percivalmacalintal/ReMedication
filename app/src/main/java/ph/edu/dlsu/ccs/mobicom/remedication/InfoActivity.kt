@@ -8,11 +8,13 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.core.widget.addTextChangedListener
 import ph.edu.dlsu.ccs.mobicom.remedication.databinding.ActivityInfoBinding
+import ph.edu.dlsu.ccs.mobicom.remedication.databinding.DialogTimeofdaySelectionBinding
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.GregorianCalendar
@@ -25,6 +27,7 @@ class InfoActivity : ComponentActivity() {
         const val DOSAGE_KEY = "DOSAGE_KEY"
         const val UNIT_KEY = "UNIT_KEY"
         const val FREQUENCY_KEY = "FREQUENCY_KEY"
+        const val TIMEOFDAY_KEY = "TIMEOFDAY_KEY"
         const val REMAINING_KEY = "REMAINING_KEY"
         const val START_KEY = "START_KEY"
         const val END_KEY = "END_KEY"
@@ -36,12 +39,24 @@ class InfoActivity : ComponentActivity() {
     private var initialDosage: String = ""
     private var initialUnit: String = ""
     private var initialFrequency: String = ""
+    private var initialTimeOfDay: List<Int> = listOf()
     private var initialRemaining: String = ""
     private var initialStartDate: String = ""
     private var initialEndDate: String = ""
     private var initialPosition: Int = -1
 
     private var defaultEditTextBackground: Drawable? = null
+    private var selectedTimeOfDay = mutableListOf<Int>()
+
+    private var isSpinnerInitialized = false
+    private var previousFreqPosition = 0
+    private var restoringSpinner = false
+    private var confirmedTimeOfDay = mutableListOf<Int>()
+    private var confirmedFrequency = ""
+
+    private val units = arrayOf("mg", "ml")
+    private val frequencies = arrayOf("Once a day", "Twice a day", "Three times a day")
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -52,10 +67,14 @@ class InfoActivity : ComponentActivity() {
         initialDosage = this.intent.getIntExtra(DOSAGE_KEY, 0).toString()
         initialUnit = this.intent.getStringExtra(UNIT_KEY) ?: ""
         initialFrequency = this.intent.getStringExtra(FREQUENCY_KEY) ?: ""
+        initialTimeOfDay = this.intent.getIntegerArrayListExtra(TIMEOFDAY_KEY) ?: listOf()
         initialRemaining = this.intent.getIntExtra(REMAINING_KEY, 0).toString()
         initialStartDate = this.intent.getStringExtra(START_KEY) ?: ""
         initialEndDate = this.intent.getStringExtra(END_KEY) ?: ""
         initialPosition = this.intent.getIntExtra(POSITION_KEY, -1)
+
+        confirmedFrequency  = initialFrequency
+        confirmedTimeOfDay = initialTimeOfDay.toMutableList()
 
         viewBinding.namevalEt.setText(initialName)
         viewBinding.dosvalEt.setText(initialDosage)
@@ -92,10 +111,8 @@ class InfoActivity : ComponentActivity() {
                 viewBinding.remvalEt.isFocusable = true
                 viewBinding.remvalEt.isFocusableInTouchMode = true
 
-
-
-                viewBinding.freqvalSpin.visibility = View.VISIBLE
-                viewBinding.unitvalSpin.visibility = View.VISIBLE
+                viewBinding.freqvalSp.visibility = View.VISIBLE
+                viewBinding.unitvalSp.visibility = View.VISIBLE
                 viewBinding.dosvalEt.visibility = View.VISIBLE
 
                 viewBinding.freqvalTv.visibility = View.GONE
@@ -130,8 +147,8 @@ class InfoActivity : ComponentActivity() {
                 return@setOnClickListener
             }
 
-            val updatedUnit = viewBinding.unitvalSpin.selectedItem.toString()
-            val updatedFrequency = viewBinding.freqvalSpin.selectedItem.toString()
+            val updatedUnit = viewBinding.unitvalSp.selectedItem.toString()
+            val updatedFrequency = viewBinding.freqvalSp.selectedItem.toString()
 
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Confirm Changes")
@@ -143,18 +160,17 @@ class InfoActivity : ComponentActivity() {
                 returnIntent.putExtra(DOSAGE_KEY, updatedDosage.toInt())
                 returnIntent.putExtra(UNIT_KEY, updatedUnit)
                 returnIntent.putExtra(FREQUENCY_KEY, updatedFrequency)
+                returnIntent.putIntegerArrayListExtra(TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
                 returnIntent.putExtra(REMAINING_KEY, updatedRemaining.toInt())
                 returnIntent.putExtra(START_KEY, updatedStartDate)
                 returnIntent.putExtra(END_KEY, updatedEndDate)
                 returnIntent.putExtra(POSITION_KEY, initialPosition)
-
-                viewBinding.dosvalTv.text = getString(R.string.dosvalTvText, updatedDosage, updatedUnit)
-
                 setResult(RESULT_OK, returnIntent)
                 finish()
             }
 
             builder.setNegativeButton("No") { dialog, _ ->
+                enableSaveButtonIfChanges(viewBinding)
                 dialog.cancel()
             }
 
@@ -184,40 +200,138 @@ class InfoActivity : ComponentActivity() {
             finish()
         }
 
-        val units = arrayOf("mg", "ml")
-        val frequencies = arrayOf("Once a day", "Twice a day", "Three times a day")
-
         val unitAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, units)
         unitAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        viewBinding.unitvalSpin.adapter = unitAdapter
+        viewBinding.unitvalSp.adapter = unitAdapter
 
         val freqAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, frequencies)
         freqAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        viewBinding.freqvalSpin.adapter = freqAdapter
+        viewBinding.freqvalSp.adapter = freqAdapter
+        viewBinding.freqvalSp.setOnTouchListener { view, _ ->
+            view.performClick()
+            isSpinnerInitialized = true
+            false
+        }
 
-        viewBinding.unitvalSpin.setSelection(units.indexOf(initialUnit))
-        viewBinding.freqvalSpin.setSelection(frequencies.indexOf(initialFrequency))
+        viewBinding.unitvalSp.setSelection(units.indexOf(initialUnit))
+        viewBinding.freqvalSp.setSelection(frequencies.indexOf(initialFrequency))
+        previousFreqPosition = frequencies.indexOf(initialFrequency)
 
-        viewBinding.unitvalSpin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        viewBinding.unitvalSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                initialUnit = parent.getItemAtPosition(position).toString()
                 enableSaveButtonIfChanges(viewBinding)
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-        viewBinding.freqvalSpin.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        viewBinding.freqvalSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                initialFrequency = parent.getItemAtPosition(position).toString()
+                if (restoringSpinner) {
+                    restoringSpinner = false
+                    return
+                }
+
+                if (!isSpinnerInitialized) return
+                isSpinnerInitialized = false
+
+                val newFrequency = parent.getItemAtPosition(position).toString()
+
+                // ✅ New selection: Once/Twice
+                if (newFrequency == "Once a day" || newFrequency == "Twice a day") {
+                    selectedTimeOfDay.clear()
+                    showTimeOfDaySelectionDialog(
+                        newFrequency,
+                        onConfirm = {
+                            previousFreqPosition = position
+                            enableSaveButtonIfChanges(viewBinding)
+                        },
+                        onCancel = {
+                            restoringSpinner = true
+                            viewBinding.freqvalSp.setSelection(previousFreqPosition)
+                            selectedTimeOfDay  = confirmedTimeOfDay.toMutableList()
+                            enableSaveButtonIfChanges(viewBinding)
+                        }
+                    )
+                    return
+                }
+
+                // ✅ Handle "Three times a day"
+                confirmedFrequency = newFrequency
+                previousFreqPosition = position
+                selectedTimeOfDay = mutableListOf(0, 1, 2)
+                confirmedTimeOfDay = selectedTimeOfDay.toMutableList()
                 enableSaveButtonIfChanges(viewBinding)
             }
-
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
     }
 
+    private fun showTimeOfDaySelectionDialog(
+        frequencyLabel: String,
+        onConfirm: () -> Unit,
+        onCancel: () -> Unit
+    ) {
+        val dialogBinding = DialogTimeofdaySelectionBinding.inflate(layoutInflater)
+
+        val morningCb = dialogBinding.morningCb
+        val afternoonCb = dialogBinding.afternoonCb
+        val nightCb = dialogBinding.nightCb
+        val freqTv = dialogBinding.freqTv
+
+        freqTv.text = getString(R.string.freqTvText, frequencyLabel)
+
+        val maxSelection = when (frequencyLabel) {
+            "Once a day" -> 1
+            "Twice a day" -> 2
+            else -> Int.MAX_VALUE
+        }
+
+        val limitSelections = { checkedCount: Int ->
+            morningCb.isEnabled = checkedCount < maxSelection || morningCb.isChecked
+            afternoonCb.isEnabled = checkedCount < maxSelection || afternoonCb.isChecked
+            nightCb.isEnabled = checkedCount < maxSelection || nightCb.isChecked
+        }
+
+        val checkBoxListener = CompoundButton.OnCheckedChangeListener { _, _ ->
+            val checkedCount = listOf(morningCb, afternoonCb, nightCb).count { it.isChecked }
+            limitSelections(checkedCount)
+        }
+
+        morningCb.setOnCheckedChangeListener(checkBoxListener)
+        afternoonCb.setOnCheckedChangeListener(checkBoxListener)
+        nightCb.setOnCheckedChangeListener(checkBoxListener)
+
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Select Time of Day")
+        builder.setView(dialogBinding.root)
+
+        builder.setPositiveButton("OK") { _, _ ->
+            selectedTimeOfDay.clear()
+            if (morningCb.isChecked) selectedTimeOfDay.add(0)
+            if (afternoonCb.isChecked) selectedTimeOfDay.add(1)
+            if (nightCb.isChecked) selectedTimeOfDay.add(2)
+            confirmedFrequency  = frequencyLabel
+            confirmedTimeOfDay  = selectedTimeOfDay.toMutableList()
+            onConfirm()
+        }
+
+        builder.setNegativeButton("Cancel") { _, _ ->
+            onCancel()
+        }
+
+        builder.show()
+    }
+
     private fun disableEditing(viewBinding: ActivityInfoBinding) {
+        viewBinding.namevalEt.setText(initialName)
+        viewBinding.dosvalEt.setText(initialDosage)
+        viewBinding.remvalEt.setText(initialRemaining)
+        viewBinding.startvalEt.setText(initialStartDate)
+        viewBinding.endvalEt.setText(initialEndDate)
+        viewBinding.unitvalSp.setSelection(units.indexOf(initialUnit))
+        viewBinding.freqvalSp.setSelection(frequencies.indexOf(initialFrequency))
+
         viewBinding.namevalEt.isFocusable = false
         viewBinding.namevalEt.isFocusableInTouchMode = false
         viewBinding.dosvalEt.isFocusable = false
@@ -231,18 +345,33 @@ class InfoActivity : ComponentActivity() {
         viewBinding.startvalEt.setBackgroundResource(android.R.color.transparent)
         viewBinding.endvalEt.setBackgroundResource(android.R.color.transparent)
 
-        viewBinding.freqvalSpin.visibility = View.GONE
-        viewBinding.unitvalSpin.visibility = View.GONE
+        viewBinding.freqvalSp.visibility = View.GONE
+        viewBinding.unitvalSp.visibility = View.GONE
         viewBinding.dosvalEt.visibility = View.GONE
 
         viewBinding.dosvalTv.visibility = View.VISIBLE
         viewBinding.dosvalTv.text = getString(R.string.dosvalTvText, initialDosage, initialUnit)
 
         viewBinding.freqvalTv.visibility = View.VISIBLE
-        viewBinding.freqvalTv.text = initialFrequency
+        viewBinding.freqvalTv.text = formatFrequencyLabel(initialFrequency, initialTimeOfDay)
 
         viewBinding.saveBtn.visibility = View.GONE
         viewBinding.delBtn.visibility = View.GONE
+    }
+
+    private fun formatFrequencyLabel(freq: String, timeOfDay: List<Int>): String {
+        if (freq == "Three times a day") return freq
+
+        val timeLabels = timeOfDay.mapNotNull {
+            when (it) {
+                0 -> "Morning"
+                1 -> "Afternoon"
+                2 -> "Night"
+                else -> null
+            }
+        }
+
+        return if (timeLabels.isNotEmpty()) "$freq: ${timeLabels.joinToString(" & ")}" else freq
     }
 
     private fun showDatePickerDialog(editText: EditText, dateString: String) {
@@ -309,7 +438,8 @@ class InfoActivity : ComponentActivity() {
                 viewBinding.remvalEt.text.toString() != initialRemaining ||
                 viewBinding.startvalEt.text.toString() != initialStartDate ||
                 viewBinding.endvalEt.text.toString() != initialEndDate ||
-                viewBinding.unitvalSpin.selectedItem?.toString() != initialUnit ||
-                viewBinding.freqvalSpin.selectedItem?.toString() != initialFrequency
+                viewBinding.unitvalSp.selectedItem?.toString() != initialUnit ||
+                viewBinding.freqvalSp.selectedItem?.toString() != initialFrequency ||
+                selectedTimeOfDay != initialTimeOfDay
     }
 }

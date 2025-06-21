@@ -1,0 +1,35 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Display the selected frequency -->
+    <TextView
+        android:id="@+id/freqTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Selected Frequency:"
+        android:textSize="16sp"
+        android:paddingBottom="8dp"/>
+
+    <!-- Checkboxes for time chunks -->
+    <CheckBox
+        android:id="@+id/morningCb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Morning" />
+
+    <CheckBox
+        android:id="@+id/afternoonCb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Afternoon" />
+
+    <CheckBox
+        android:id="@+id/nightCb"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Night" />
+</LinearLayout>
