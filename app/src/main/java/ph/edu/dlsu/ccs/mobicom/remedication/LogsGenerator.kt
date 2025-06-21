@@ -13,8 +13,15 @@ class LogsGenerator {
             val logList = ArrayList<Log>()
 
             for (i in 1..8) {
-                logList.add(Log(currentDate, currentTime, "MED NAME", i, "160mg"))
+                val isMissed = i%3 == 0
+                logList.add(Log(currentDate, currentTime, "MED NAME", i, "160mg", isMissed))
             }
+
+            return logList
+        }
+
+        fun generateNoData(): ArrayList<Log> {
+            val logList = ArrayList<Log>()
 
             return logList
         }

@@ -10,15 +10,20 @@ class LogsDateGenerator {
         fun generateData(): ArrayList<LogsDate> {
             val calendar = Calendar.getInstance()
             calendar.time = Date()
-
             val formatter = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
 
             val tempList = ArrayList<LogsDate>()
+
             for (i in 1..5) {
                 val date = calendar.time
                 val formattedDate = formatter.format(date)
+                if (i == 1){
+                    tempList.add(LogsDate(formattedDate, LogsGenerator.generateNoData()))
+                }
+                else{
+                    tempList.add(LogsDate(formattedDate, LogsGenerator.generateData()))
+                }
 
-                tempList.add(LogsDate(formattedDate, LogsGenerator.generateData()))
 
                 calendar.add(Calendar.DAY_OF_MONTH, -1)
             }
