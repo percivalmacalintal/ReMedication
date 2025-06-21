@@ -3,18 +3,18 @@
 
     <item
         android:id="@+id/homeIt"
-        android:icon="@android:drawable/btn_star_big_on"
+        android:icon="@drawable/baseline_home_24"
         android:title="@string/homeItText" />
     <item
         android:id="@+id/medsIt"
-        android:icon="@android:drawable/ic_dialog_dialer"
+        android:icon="@drawable/baseline_medication_24"
         android:title="@string/medsItText" />
     <item
         android:id="@+id/logsIt"
-        android:icon="@android:drawable/ic_menu_info_details"
+        android:icon="@drawable/baseline_event_24"
         android:title="@string/logsItText" />
     <item
         android:id="@+id/setsIt"
-        android:icon="@android:drawable/ic_menu_preferences"
+        android:icon="@drawable/baseline_settings_24"
         android:title="@string/setsItText" />
 </menu>
