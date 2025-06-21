@@ -7,14 +7,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import ph.edu.dlsu.ccs.mobicom.remedication.databinding.ActivityMedicineBinding
 
 class MedicineActivity : ComponentActivity() {
 
     private val medicineList : ArrayList<Medicine> = MedicineGenerator.generateData()
 
-    private lateinit var recyclerView: RecyclerView
     private lateinit var medAdapter: MedicineAdapter
 
     private val infoResultLauncher = registerForActivityResult(
@@ -45,18 +44,38 @@ class MedicineActivity : ComponentActivity() {
         }
     }
 
+    private val newMedicineResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
+        if (result.resultCode == RESULT_OK) {
+            val name = result.data!!.getStringExtra(NewMedicineActivity.NEW_NAME_KEY) ?: ""
+            val dosage = result.data!!.getIntExtra(NewMedicineActivity.NEW_DOSAGE_KEY, 0)
+            val unit = result.data!!.getStringExtra(NewMedicineActivity.NEW_UNIT_KEY) ?: ""
+            val frequency = result.data!!.getStringExtra(NewMedicineActivity.NEW_FREQUENCY_KEY) ?: ""
+            val timeOfDay = result.data!!.getIntegerArrayListExtra(NewMedicineActivity.NEW_TIMEOFDAY_KEY) ?: arrayListOf()
+            val remaining = result.data!!.getIntExtra(NewMedicineActivity.NEW_REMAINING_KEY, 0)
+            val startDate = result.data!!.getStringExtra(NewMedicineActivity.NEW_START_KEY) ?: ""
+            val endDate = result.data!!.getStringExtra(NewMedicineActivity.NEW_END_KEY) ?: ""
+            medicineList.add(Medicine(android.R.drawable.ic_menu_report_image, name, dosage, unit, frequency, timeOfDay, remaining, startDate, endDate))
+            medAdapter.notifyItemInserted(medicineList.size - 1)
+        }
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_medicine)
+        val viewBinding = ActivityMedicineBinding.inflate(layoutInflater)
+        setContentView(viewBinding.root)
 
-        this.recyclerView = findViewById(R.id.medicineRv)
         this.medAdapter = MedicineAdapter(this.medicineList, infoResultLauncher)
-        this.recyclerView.adapter = medAdapter
-
-        this.recyclerView.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false)
+        viewBinding.medicineRv.adapter = medAdapter
+        viewBinding.medicineRv.layoutManager = GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false)
         val spacing = (32 * Resources.getSystem().displayMetrics.density).toInt()
-        recyclerView.addItemDecoration(GridSpacingItemDecoration(2, spacing, true))
+        viewBinding.medicineRv.addItemDecoration(GridSpacingItemDecoration(2, spacing, true))
+
+        viewBinding.addBtn.setOnClickListener {
+            val intent = Intent(applicationContext, NewMedicineActivity::class.java)
+            newMedicineResultLauncher.launch(intent)
+        }
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.medsIt
