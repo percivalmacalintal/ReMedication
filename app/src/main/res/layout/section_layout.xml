@@ -11,11 +11,11 @@
         android:id="@+id/lineIv"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:src="@drawable/line"
         app:layout_constraintBottom_toBottomOf="@+id/sectionLabelTv"
         app:layout_constraintEnd_toStartOf="@+id/dropdownBtn"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/sectionLabelTv"
-        app:srcCompat="@drawable/line" />
+        app:layout_constraintTop_toTopOf="@+id/sectionLabelTv" />
 
     <TextView
         android:id="@+id/sectionLabelTv"
@@ -49,8 +49,8 @@
         android:background="@android:color/transparent"
         android:foregroundGravity="center"
         android:scaleType="fitCenter"
+        android:src="@drawable/dropdown"
         app:layout_constraintBottom_toBottomOf="@+id/sectionLabelTv"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/sectionLabelTv"
-        app:srcCompat="@drawable/dropdown" />
+        app:layout_constraintTop_toTopOf="@+id/sectionLabelTv" />
 </androidx.constraintlayout.widget.ConstraintLayout>

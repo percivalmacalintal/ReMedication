@@ -103,7 +103,10 @@ class LogsActivity : ComponentActivity() {
                 }
                 R.id.logsIt -> true
                 R.id.setsIt -> {
-                    //
+                    val intent = Intent(this, SettingsActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                    startActivity(intent)
+                    overridePendingTransition(0, 0)
                     true
                 }
                 else -> false
