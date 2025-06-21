@@ -3,7 +3,7 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 import java.util.*
 import java.text.SimpleDateFormat
 
-class Medicine(imageId : Int, name: String, dosage: Int, unit: String, frequency: String, remaining: Int, start: String, end: String) {
+class Medicine(imageId : Int, name: String, dosage: Int, unit: String, frequency: String, timeOfDay: List<Int>, remaining: Int, start: String, end: String) {
     var imageId = imageId
         private set
     var name = name
@@ -13,6 +13,8 @@ class Medicine(imageId : Int, name: String, dosage: Int, unit: String, frequency
     var unit = unit
         private set
     var frequency = frequency
+        private set
+    var timeOfDay = timeOfDay
         private set
     var remaining = remaining
         private set

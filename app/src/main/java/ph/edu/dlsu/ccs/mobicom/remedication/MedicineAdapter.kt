@@ -18,6 +18,7 @@ class MedicineAdapter(private val data: ArrayList<Medicine>, private val myActiv
             intent.putExtra(InfoActivity.DOSAGE_KEY, data[myViewHolder.absoluteAdapterPosition].dosage)
             intent.putExtra(InfoActivity.UNIT_KEY, data[myViewHolder.absoluteAdapterPosition].unit)
             intent.putExtra(InfoActivity.FREQUENCY_KEY, data[myViewHolder.absoluteAdapterPosition].frequency)
+            intent.putIntegerArrayListExtra(InfoActivity.TIMEOFDAY_KEY, ArrayList(data[myViewHolder.absoluteAdapterPosition].timeOfDay))
             intent.putExtra(InfoActivity.REMAINING_KEY, data[myViewHolder.absoluteAdapterPosition].remaining)
             intent.putExtra(InfoActivity.START_KEY, data[myViewHolder.absoluteAdapterPosition].getFormattedStartDate())
             intent.putExtra(InfoActivity.END_KEY, data[myViewHolder.absoluteAdapterPosition].getFormattedEndDate())

@@ -13,4 +13,5 @@
     <string name="logsItText">Logs</string>
     <string name="setsItText">Settings</string>
     <string name="dosvalTvText">%1$s %2$s</string>
+    <string name="freqTvText">Selected Frequency: %1$s</string>
 </resources>

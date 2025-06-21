@@ -28,11 +28,12 @@ class MedicineActivity : ComponentActivity() {
                 val updatedDosage = result.data!!.getIntExtra(InfoActivity.DOSAGE_KEY, 0)
                 val updatedUnit = result.data!!.getStringExtra(InfoActivity.UNIT_KEY) ?: ""
                 val updatedFrequency = result.data!!.getStringExtra(InfoActivity.FREQUENCY_KEY) ?: ""
+                val updatedTimeOfDay = result.data!!.getIntegerArrayListExtra(InfoActivity.TIMEOFDAY_KEY) ?: listOf()
                 val updatedRemaining = result.data!!.getIntExtra(InfoActivity.REMAINING_KEY, 0)
                 val updatedStartDate = result.data!!.getStringExtra(InfoActivity.START_KEY) ?: ""
                 val updatedEndDate = result.data!!.getStringExtra(InfoActivity.END_KEY) ?: ""
                 if (updatedName != null) {
-                    medicineList[position!!] = Medicine(android.R.drawable.ic_menu_report_image, updatedName, updatedDosage, updatedUnit, updatedFrequency, updatedRemaining, updatedStartDate, updatedEndDate)
+                    medicineList[position!!] = Medicine(android.R.drawable.ic_menu_report_image, updatedName, updatedDosage, updatedUnit, updatedFrequency, updatedTimeOfDay, updatedRemaining, updatedStartDate, updatedEndDate)
                     medAdapter.notifyItemChanged(position)
                 } else {
                     if (position != null) {
