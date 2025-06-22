@@ -6,7 +6,7 @@ class SectionDataGenerator {
             val sections = ArrayList<Section>()
             val medicineList = MedicineGenerator.generateData()
 
-            val sectionTitles = listOf("After Midnight", "Morning", "Afternoon", "Night")
+            val sectionTitles = listOf("Early Morning", "Morning", "Afternoon", "Night")
 
             for (i in 0..3) {
                 val filteredMedicines = medicineList.filter { it.timeOfDay.contains(i) }

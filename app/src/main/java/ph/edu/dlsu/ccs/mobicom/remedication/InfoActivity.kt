@@ -59,7 +59,7 @@ class InfoActivity : ComponentActivity() {
     private var confirmedFrequency = ""
 
     private val units = arrayOf("mg", "ml")
-    private val frequencies = arrayOf("Once a day", "Twice a day", "Three times a day")
+    private val frequencies = arrayOf("Once a day", "Twice a day", "Thrice a day")
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -260,44 +260,27 @@ class InfoActivity : ComponentActivity() {
 
         viewBinding.freqvalSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                if (restoringSpinner) {
-                    restoringSpinner = false
-                    return
-                }
-
+                if (restoringSpinner) { restoringSpinner = false; return }
                 if (!isSpinnerInitialized) return
                 isSpinnerInitialized = false
 
                 val newFrequency = parent.getItemAtPosition(position).toString()
 
-                if (newFrequency == "Once a day" || newFrequency == "Twice a day") {
-                    selectedTimeOfDay.clear()
-                    showTimeOfDaySelectionDialog(
-                        newFrequency,
-                        onConfirm = {
-                            previousFreqPosition = position
-                            enableSaveButtonIfChanges(viewBinding)
-                        },
-                        onCancel = {
-                            restoringSpinner = true
-                            viewBinding.freqvalSp.setSelection(previousFreqPosition)
-                            selectedTimeOfDay  = confirmedTimeOfDay.toMutableList()
-                            enableSaveButtonIfChanges(viewBinding)
-                        }
-                    )
-                    return
-                }
-
-                confirmedFrequency = newFrequency
-                previousFreqPosition = position
-                selectedTimeOfDay = mutableListOf(0, 1, 2)
-                confirmedTimeOfDay = selectedTimeOfDay.toMutableList()
-
-                if (isEditing) {
-                    viewBinding.freqvalTv.visibility = View.GONE
-                }
-
-                enableSaveButtonIfChanges(viewBinding)
+                selectedTimeOfDay.clear()
+                showTimeOfDaySelectionDialog(
+                    newFrequency,
+                    onConfirm = {
+                        confirmedFrequency = newFrequency
+                        previousFreqPosition = position
+                        enableSaveButtonIfChanges(viewBinding)
+                    },
+                    onCancel = {
+                        restoringSpinner = true
+                        viewBinding.freqvalSp.setSelection(previousFreqPosition)
+                        selectedTimeOfDay = confirmedTimeOfDay.toMutableList()
+                        enableSaveButtonIfChanges(viewBinding)
+                    }
+                )
             }
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
@@ -310,6 +293,7 @@ class InfoActivity : ComponentActivity() {
     ) {
         val dialogBinding = DialogTimeofdaySelectionBinding.inflate(layoutInflater)
 
+        val afterMidnightCb = dialogBinding.afterMidnightCb
         val morningCb = dialogBinding.morningCb
         val afternoonCb = dialogBinding.afternoonCb
         val nightCb = dialogBinding.nightCb
@@ -320,20 +304,23 @@ class InfoActivity : ComponentActivity() {
         val maxSelection = when (frequencyLabel) {
             "Once a day" -> 1
             "Twice a day" -> 2
+            "Thrice a day" -> 2
             else -> Int.MAX_VALUE
         }
 
         val limitSelections = { checkedCount: Int ->
+            afterMidnightCb.isEnabled = checkedCount < maxSelection || afterMidnightCb.isChecked
             morningCb.isEnabled = checkedCount < maxSelection || morningCb.isChecked
             afternoonCb.isEnabled = checkedCount < maxSelection || afternoonCb.isChecked
             nightCb.isEnabled = checkedCount < maxSelection || nightCb.isChecked
         }
 
         val checkBoxListener = CompoundButton.OnCheckedChangeListener { _, _ ->
-            val checkedCount = listOf(morningCb, afternoonCb, nightCb).count { it.isChecked }
+            val checkedCount = listOf(afterMidnightCb, morningCb, afternoonCb, nightCb).count { it.isChecked }
             limitSelections(checkedCount)
         }
 
+        afterMidnightCb.setOnCheckedChangeListener(checkBoxListener)
         morningCb.setOnCheckedChangeListener(checkBoxListener)
         afternoonCb.setOnCheckedChangeListener(checkBoxListener)
         nightCb.setOnCheckedChangeListener(checkBoxListener)
@@ -344,9 +331,10 @@ class InfoActivity : ComponentActivity() {
 
         builder.setPositiveButton("OK") { _, _ ->
             selectedTimeOfDay.clear()
-            if (morningCb.isChecked) selectedTimeOfDay.add(0)
-            if (afternoonCb.isChecked) selectedTimeOfDay.add(1)
-            if (nightCb.isChecked) selectedTimeOfDay.add(2)
+            if (afterMidnightCb.isChecked) selectedTimeOfDay.add(0)
+            if (morningCb.isChecked) selectedTimeOfDay.add(1)
+            if (afternoonCb.isChecked) selectedTimeOfDay.add(2)
+            if (nightCb.isChecked) selectedTimeOfDay.add(3)
             confirmedFrequency  = frequencyLabel
             confirmedTimeOfDay  = selectedTimeOfDay.toMutableList()
             if (isEditing) {
@@ -404,13 +392,12 @@ class InfoActivity : ComponentActivity() {
     }
 
     private fun formatFrequencyLabel(freq: String, timeOfDay: List<Int>): String {
-        if (freq == "Three times a day") return freq
-
         val timeLabels = timeOfDay.mapNotNull {
             when (it) {
-                0 -> "Morning"
-                1 -> "Afternoon"
-                2 -> "Night"
+                0 -> "Early Morning"
+                1 -> "Morning"
+                2 -> "Afternoon"
+                3 -> "Night"
                 else -> null
             }
         }
@@ -464,9 +451,10 @@ class InfoActivity : ComponentActivity() {
     private fun formatTimeOfDayOnly(timeOfDay: List<Int>): String {
         val timeLabels = timeOfDay.mapNotNull {
             when (it) {
-                0 -> "Morning"
-                1 -> "Afternoon"
-                2 -> "Night"
+                0 -> "Early Morning"
+                1 -> "Morning"
+                2 -> "Afternoon"
+                3 -> "Night"
                 else -> null
             }
         }

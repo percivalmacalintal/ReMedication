@@ -44,7 +44,7 @@ class SectionAdapter(private val sections: List<Section>) :
 
         for (section in sections) {
             section.isExpanded = when (section.label) {
-                "After Midnight" -> currentHour in 0..5
+                "Early Morning" -> currentHour in 0..5
                 "Morning"        -> currentHour in 6..11
                 "Afternoon"      -> currentHour in 12..17
                 "Night"          -> currentHour in 18..23
@@ -55,7 +55,7 @@ class SectionAdapter(private val sections: List<Section>) :
 
     private fun markOverdueItems() {
         val periodRank = mapOf(
-            "After Midnight" to 0,
+            "Early Morning" to 0,
             "Morning"        to 1,
             "Afternoon"      to 2,
             "Night"          to 3

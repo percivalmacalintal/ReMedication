@@ -7,7 +7,7 @@ class SettingsDataGenerator {
 
             tempList.add(
                 Settings(
-                    "After Midnight",
+                    "Early Morning",
                     arrayListOf("12:00 AM", "1:00 AM", "2:00 AM", "3:00 AM", "4:00 AM", "5:00 AM")
                 )
             )

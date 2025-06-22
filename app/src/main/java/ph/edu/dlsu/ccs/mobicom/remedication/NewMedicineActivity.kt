@@ -38,8 +38,11 @@ class NewMedicineActivity : ComponentActivity(){
     private var confirmedFrequency = ""
 
     private val units = arrayOf("mg", "ml")
-    private val frequencies = arrayOf("Select frequency...", "Once a day", "Twice a day", "Three times a day")
+    private val frequencies = arrayOf("Select frequency...", "Once a day", "Twice a day", "Thrice a day")
     private val resId = R.drawable.medicine
+
+    private var previousFreqPosition = 0
+    private var restoringSpinner = false
 
     private var imageAdded = false
 
@@ -86,6 +89,12 @@ class NewMedicineActivity : ComponentActivity(){
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
+
+            if (confirmedTimeOfDay.isEmpty()) {
+                Toast.makeText(this, "Please choose time(s) of day", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val returnIntent = Intent()
             returnIntent.putExtra(NEW_IMAGE_KEY, image)
             returnIntent.putExtra(NEW_NAME_KEY, name)
@@ -102,29 +111,37 @@ class NewMedicineActivity : ComponentActivity(){
 
         viewBinding.freqvalSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
-                val newFrequency = parent.getItemAtPosition(position).toString()
+                if (restoringSpinner) { restoringSpinner = false; return }
 
-                if (newFrequency == "Once a day" || newFrequency == "Twice a day") {
-                    selectedTimeOfDay.clear()
-                    showTimeOfDaySelectionDialog(
-                        newFrequency,
-                        onConfirm = {
-                            confirmedFrequency = newFrequency
-                        },
-                        onCancel = {
-                            viewBinding.freqvalSp.setSelection(0)
-                            selectedTimeOfDay = confirmedTimeOfDay.toMutableList()
-                        }
-                    )
+                val newFrequency = parent.getItemAtPosition(position).toString()
+                if (position == 0) {
+                    confirmedFrequency = ""
+                    confirmedTimeOfDay.clear()
+                    viewBinding.freqvalTv.visibility = View.GONE
                     return
                 }
-                confirmedFrequency = newFrequency
-                selectedTimeOfDay = mutableListOf(0, 1, 2)
-                confirmedTimeOfDay = selectedTimeOfDay.toMutableList()
-                viewBinding.freqvalTv.visibility = View.GONE
+
+                selectedTimeOfDay.clear()
+                showTimeOfDaySelectionDialog(
+                    newFrequency,
+                    onConfirm = {
+                        confirmedFrequency = newFrequency
+                        confirmedTimeOfDay = selectedTimeOfDay.toMutableList()
+                        viewBinding.freqvalTv.text = formatTimeOfDayOnly(confirmedTimeOfDay)
+                        viewBinding.freqvalTv.visibility = View.VISIBLE
+                        previousFreqPosition = position
+                    },
+                    onCancel  = {
+                        restoringSpinner = true
+                        viewBinding.freqvalSp.setSelection(previousFreqPosition)
+                        selectedTimeOfDay = confirmedTimeOfDay.toMutableList()
+                    }
+                )
             }
             override fun onNothingSelected(parent: AdapterView<*>) {}
         }
+
+        viewBinding.freqvalSp.setSelection(0)
 
         viewBinding.medicineIv.setImageResource(android.R.color.transparent)
         viewBinding.addImgBtn.setOnClickListener {
@@ -163,6 +180,7 @@ class NewMedicineActivity : ComponentActivity(){
     ) {
         val dialogBinding = DialogTimeofdaySelectionBinding.inflate(layoutInflater)
 
+        val afterMidnightCb = dialogBinding.afterMidnightCb
         val morningCb = dialogBinding.morningCb
         val afternoonCb = dialogBinding.afternoonCb
         val nightCb = dialogBinding.nightCb
@@ -173,20 +191,23 @@ class NewMedicineActivity : ComponentActivity(){
         val maxSelection = when (frequencyLabel) {
             "Once a day" -> 1
             "Twice a day" -> 2
+            "Thrice a day" -> 3
             else -> Int.MAX_VALUE
         }
 
         val limitSelections = { checkedCount: Int ->
+            afterMidnightCb.isEnabled = checkedCount < maxSelection || afterMidnightCb.isChecked
             morningCb.isEnabled = checkedCount < maxSelection || morningCb.isChecked
             afternoonCb.isEnabled = checkedCount < maxSelection || afternoonCb.isChecked
             nightCb.isEnabled = checkedCount < maxSelection || nightCb.isChecked
         }
 
         val checkBoxListener = CompoundButton.OnCheckedChangeListener { _, _ ->
-            val checkedCount = listOf(morningCb, afternoonCb, nightCb).count { it.isChecked }
+            val checkedCount = listOf(afterMidnightCb, morningCb, afternoonCb, nightCb).count { it.isChecked }
             limitSelections(checkedCount)
         }
 
+        afterMidnightCb.setOnCheckedChangeListener(checkBoxListener)
         morningCb.setOnCheckedChangeListener(checkBoxListener)
         afternoonCb.setOnCheckedChangeListener(checkBoxListener)
         nightCb.setOnCheckedChangeListener(checkBoxListener)
@@ -197,14 +218,14 @@ class NewMedicineActivity : ComponentActivity(){
 
         builder.setPositiveButton("OK") { _, _ ->
             selectedTimeOfDay.clear()
-            if (morningCb.isChecked) selectedTimeOfDay.add(0)
-            if (afternoonCb.isChecked) selectedTimeOfDay.add(1)
-            if (nightCb.isChecked) selectedTimeOfDay.add(2)
+            if (afterMidnightCb.isChecked) selectedTimeOfDay.add(0)
+            if (morningCb.isChecked) selectedTimeOfDay.add(1)
+            if (afternoonCb.isChecked) selectedTimeOfDay.add(2)
+            if (nightCb.isChecked) selectedTimeOfDay.add(3)
             confirmedFrequency = frequencyLabel
             confirmedTimeOfDay = selectedTimeOfDay.toMutableList()
             viewBinding.freqvalTv.text = formatTimeOfDayOnly(selectedTimeOfDay)
             viewBinding.freqvalTv.visibility = View.VISIBLE
-            onConfirm()
             onConfirm()
         }
 
@@ -218,9 +239,10 @@ class NewMedicineActivity : ComponentActivity(){
     private fun formatTimeOfDayOnly(timeOfDay: List<Int>): String {
         val timeLabels = timeOfDay.mapNotNull {
             when (it) {
-                0 -> "Morning"
-                1 -> "Afternoon"
-                2 -> "Night"
+                0 -> "Early Morning"
+                1 -> "Morning"
+                2 -> "Afternoon"
+                3 -> "Night"
                 else -> null
             }
         }
