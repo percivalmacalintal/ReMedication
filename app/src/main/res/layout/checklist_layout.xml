@@ -19,11 +19,12 @@
 
         <ImageView
             android:id="@+id/medicineImageIv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:maxWidth="100dp"
-            android:maxHeight="100dp"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:adjustViewBounds="false"
+            android:background="@drawable/rounded_white"
+            android:clipToOutline="true"
+            android:cropToPadding="true"
             tools:src="@tools:sample/avatars" />
 
         <LinearLayout
