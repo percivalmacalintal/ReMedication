@@ -19,9 +19,8 @@
             <ImageView
                 android:id="@+id/MedicineIv"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="125dp"
                 android:layout_marginBottom="6dp"
-                android:adjustViewBounds="true"
                 android:background="@drawable/image_border"
                 android:padding="16dp"
                 tools:src="@tools:sample/avatars" />
