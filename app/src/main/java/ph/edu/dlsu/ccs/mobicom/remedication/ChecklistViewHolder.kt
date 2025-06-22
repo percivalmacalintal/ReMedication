@@ -1,9 +1,11 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
+import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 
 class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
@@ -20,19 +22,25 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
         mtv.text = checklist.medicineName
         dtv.text = checklist.dosage
         cb.isChecked = checklist.isChecked
-        if (checklist.isChecked) {
-            itemView.setBackgroundColor(0xFFF6F6F6.toInt())
-            iv.alpha = 0.5f
-            mtv.alpha = 0.5f
-            dtv.alpha = 0.5f
-            cb.alpha = 0.5f
-        } else {
-            itemView.setBackgroundColor(0xFFFFFFFF.toInt())
-            iv.alpha = 1.0f
-            mtv.alpha = 1.0f
-            dtv.alpha = 1.0f
-            cb.alpha = 1.0f
+
+        val bgColor = when {
+            checklist.isChecked -> 0xFFB5F2B5.toInt()
+            checklist.isOverdue -> 0xFFFDBEC7.toInt()
+            else            -> 0xFFFFFFFF.toInt()
         }
+        val rounded = ContextCompat
+            .getDrawable(itemView.context, R.drawable.rounded_corners)!!
+            .mutate() as GradientDrawable
+
+        rounded.setColor(bgColor)
+        itemView.background = rounded
+
+        val alpha = if (checklist.isChecked) 0.5f else 1.0f
+        iv.alpha  = alpha
+        mtv.alpha = alpha
+        dtv.alpha = alpha
+        cb.alpha  = alpha
+
 
         cb.setOnClickListener {
             checklist.isChecked = !checklist.isChecked

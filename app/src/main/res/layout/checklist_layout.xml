@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:layout_margin="6dp"
+    android:background="@drawable/rounded_corners"
     android:gravity="center"
     android:orientation="vertical"
     android:padding="12dp">
@@ -56,7 +58,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginRight="12dp"
-            android:buttonTint="#2196F3" />
+            android:buttonTint="#6280A7" />
 
     </LinearLayout>
 

@@ -8,4 +8,5 @@ class Checklist (imageId: Int, medicineName: String, dosage: String) {
     var dosage = dosage
         private set
     var isChecked = false
+    var isOverdue = false
 }

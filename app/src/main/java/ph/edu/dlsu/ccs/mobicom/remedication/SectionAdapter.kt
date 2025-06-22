@@ -11,6 +11,7 @@ class SectionAdapter(private val sections: List<Section>) :
 
     init {
         updateSectionBasedOnTime(sections)
+        markOverdueItems()
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SectionViewHolder {
@@ -34,34 +35,46 @@ class SectionAdapter(private val sections: List<Section>) :
     override fun getItemCount(): Int = sections.size
 
     fun getPhilippineTime(): Calendar {
-        // Set the calendar instance to the Philippine timezone
         val calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Manila"))
         return calendar
     }
 
     fun updateSectionBasedOnTime(sections: List<Section>) {
-        // Get the current hour of the day in Philippine Time
         val currentHour = getPhilippineTime().get(Calendar.HOUR_OF_DAY)
 
-        // Loop through all sections and set isChecked based on the time
         for (section in sections) {
-            when {
-                currentHour in 0..5 -> {
-                    if (section.label == "After Midnight") section.isExpanded = true
-                    else section.isExpanded = false
-                }
-                currentHour in 6..11 -> {
-                    if (section.label == "Morning") section.isExpanded = true
-                    else section.isExpanded = false
-                }
-                currentHour in 12..17 -> {
-                    if (section.label == "Afternoon") section.isExpanded = true
-                    else section.isExpanded = false
-                }
-                currentHour in 18..23 -> {
-                    if (section.label == "Night") section.isExpanded = true
-                    else section.isExpanded = false
-                }
+            section.isExpanded = when (section.label) {
+                "After Midnight" -> currentHour in 0..5
+                "Morning"        -> currentHour in 6..11
+                "Afternoon"      -> currentHour in 12..17
+                "Night"          -> currentHour in 18..23
+                else             -> false
+            }
+        }
+    }
+
+    private fun markOverdueItems() {
+        val periodRank = mapOf(
+            "After Midnight" to 0,
+            "Morning"        to 1,
+            "Afternoon"      to 2,
+            "Night"          to 3
+        )
+
+        val currentHour = getPhilippineTime().get(Calendar.HOUR_OF_DAY)
+        val currentPeriod = when (currentHour) {
+            in 0..5   -> 0
+            in 6..11  -> 1
+            in 12..17 -> 2
+            else      -> 3
+        }
+
+        for (section in sections) {
+            val sectionRank = periodRank[section.label] ?: continue
+            val isInPast = sectionRank < currentPeriod
+
+            for (item in section.checklist) {
+                item.isOverdue = isInPast && !item.isChecked
             }
         }
     }
