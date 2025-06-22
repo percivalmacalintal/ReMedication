@@ -26,6 +26,10 @@ class SectionAdapter(private val sections: List<Section>) :
         val adapter = ChecklistAdapter(section.checklist)
         holder.checklistRv.adapter = adapter
 
+        holder.itemView.setOnClickListener {
+            section.isExpanded = !section.isExpanded
+            notifyItemChanged(position)
+        }
         holder.dropdownBtn.setOnClickListener {
             section.isExpanded = !section.isExpanded
             notifyItemChanged(position)

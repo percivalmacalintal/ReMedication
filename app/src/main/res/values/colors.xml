@@ -12,4 +12,5 @@
     <color name="pastel_green">#77DD77</color>
     <color name="lighter_pastel_red">#FFB3AE</color>
     <color name="lighter_pastel_green">#B5F2B5</color>
+    <color name="primary_color">#5F7CA3</color>
 </resources>

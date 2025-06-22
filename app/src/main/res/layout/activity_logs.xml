@@ -39,66 +39,67 @@
 
     <LinearLayout
         android:id="@+id/searchLl"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="25dp"
-        android:layout_marginEnd="25dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
         android:layout_marginBottom="6dp"
-        android:orientation="horizontal"
+        android:layout_weight="1"
+        android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@id/logsRv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
         <LinearLayout
+            android:id="@+id/spinnersLl"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/spinnersLl"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Spinner
-                    android:id="@+id/monthSp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:dropDownWidth="wrap_content"
-                    android:textAlignment="viewStart" />
-
-                <Spinner
-                    android:id="@+id/daySp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:textAlignment="viewStart" />
-
-                <Spinner
-                    android:id="@+id/yearSp"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:textAlignment="viewStart" />
-            </LinearLayout>
+            android:orientation="horizontal">
 
             <Spinner
-                android:id="@+id/medicineSp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:id="@+id/monthSp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.7"
+                android:dropDownWidth="match_parent"
+                android:textAlignment="viewStart" />
+
+            <Spinner
+                android:id="@+id/daySp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.1"
+                android:dropDownWidth="match_parent"
+                android:textAlignment="viewStart" />
+
+            <Spinner
+                android:id="@+id/yearSp"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1.2"
+                android:dropDownWidth="match_parent"
                 android:textAlignment="viewStart" />
         </LinearLayout>
 
-        <ImageView
-            android:id="@+id/imageView3"
+        <Spinner
+            android:id="@+id/medicineSp"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="10"
-            android:src="@drawable/baseline_search_24" />
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="6dp"
+            android:textAlignment="viewStart" />
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/searchBtn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:text="Search"
+            app:icon="@drawable/baseline_search_24"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
