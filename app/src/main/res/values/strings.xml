@@ -15,4 +15,6 @@
     <string name="dosvalTvText">%1$s %2$s</string>
     <string name="freqTvText">Selected Frequency: %1$s</string>
     <string name="addMedBtnText">Add Medicine</string>
+    <string name="addImgBtnText">Add Image</string>
+    <string name="edtImgBtnText">Edit Image</string>
 </resources>

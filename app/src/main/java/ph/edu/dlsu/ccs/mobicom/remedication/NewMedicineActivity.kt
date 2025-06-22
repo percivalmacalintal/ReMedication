@@ -20,6 +20,7 @@ import java.util.Locale
 
 class NewMedicineActivity : ComponentActivity(){
     companion object {
+        const val NEW_IMAGE_KEY = "NEW_IMAGE_KEY"
         const val NEW_NAME_KEY = "NEW_NAME_KEY"
         const val NEW_DOSAGE_KEY = "NEW_DOSAGE_KEY"
         const val NEW_UNIT_KEY = "NEW_UNIT_KEY"
@@ -38,6 +39,7 @@ class NewMedicineActivity : ComponentActivity(){
 
     private val units = arrayOf("mg", "ml")
     private val frequencies = arrayOf("Select frequency...", "Once a day", "Twice a day", "Three times a day")
+    private val resId = R.drawable.medicine
 
     private var imageAdded = false
 
@@ -68,6 +70,7 @@ class NewMedicineActivity : ComponentActivity(){
         }
 
         viewBinding.addMedBtn.setOnClickListener {
+            val image = resId
             val name = viewBinding.namevalEt.text.toString().trim()
             val dosage = viewBinding.dosvalEt.text.toString().trim()
             val remaining = viewBinding.remvalEt.text.toString().trim()
@@ -84,6 +87,7 @@ class NewMedicineActivity : ComponentActivity(){
                 return@setOnClickListener
             }
             val returnIntent = Intent()
+            returnIntent.putExtra(NEW_IMAGE_KEY, image)
             returnIntent.putExtra(NEW_NAME_KEY, name)
             returnIntent.putExtra(NEW_DOSAGE_KEY, dosage.toInt())
             returnIntent.putExtra(NEW_UNIT_KEY, unit)
@@ -124,7 +128,7 @@ class NewMedicineActivity : ComponentActivity(){
 
         viewBinding.medicineIv.setImageResource(android.R.color.transparent)
         viewBinding.addImgBtn.setOnClickListener {
-            viewBinding.medicineIv.setImageResource(android.R.drawable.ic_menu_report_image)
+            viewBinding.medicineIv.setImageResource(resId)
             viewBinding.addImgBtn.visibility = View.GONE
             imageAdded = true
         }
