@@ -2,6 +2,7 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,6 +19,11 @@ class SettingsActivity : ComponentActivity() {
         this.recyclerView = findViewById(R.id.settingsRv)
         this.recyclerView.layoutManager = LinearLayoutManager(this)
         this.recyclerView.adapter = SettingsAdapter(this.settingsList)
+
+        val resetBtn = findViewById<Button>(R.id.resetBtn)
+        resetBtn.setOnClickListener {
+            recyclerView.adapter?.notifyDataSetChanged()
+        }
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.homeIt

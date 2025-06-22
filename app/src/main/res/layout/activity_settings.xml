@@ -18,6 +18,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
@@ -30,11 +31,22 @@
             android:id="@+id/settingsTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="12dp"
             android:gravity="center"
             android:text="Settings"
             android:textColor="@color/black"
             android:textSize="48sp"
             android:textStyle="bold" />
+
+        <Switch
+            android:id="@+id/switch1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:text="Allow Notifications"
+            android:textSize="20sp"
+            android:thumbTint="#6280A7"
+            android:trackTint="#FDBBC5" />
 
         <TextView
             android:id="@+id/textView4"
@@ -43,14 +55,29 @@
             android:layout_margin="12dp"
             android:text="Time to remind:"
             android:textColor="@color/black"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:textStyle="bold" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/settingsRv"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content" />
 
     </LinearLayout>
+
+    <Button
+        android:id="@+id/resetBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="12dp"
+        android:background="#5F7CA3"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:text="RESET TO DEFAULT"
+        android:textColor="#FAECEE"
+        app:layout_constraintBottom_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/navBnv"

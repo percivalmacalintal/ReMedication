@@ -20,5 +20,6 @@ class SettingsViewHolder(itemView: View): ViewHolder(itemView) {
         )
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         sp.adapter = spinnerAdapter
+        sp.setSelection(2)
     }
 }
