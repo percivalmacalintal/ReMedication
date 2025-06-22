@@ -26,7 +26,7 @@ class SettingsActivity : ComponentActivity() {
         }
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
-        bottomNav.selectedItemId = R.id.homeIt
+        bottomNav.selectedItemId = R.id.setsIt
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.homeIt -> {

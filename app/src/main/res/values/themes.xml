@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.ReMedication" parent="Theme.MaterialComponents.Light" />
+    <style name="Theme.ReMedication" parent="Theme.MaterialComponents.Light">
+        <item name="colorPrimary">#5F7CA3</item>
+    </style>
 </resources>
