@@ -5,17 +5,35 @@
     android:layout_width="match_parent"
              android:layout_height="match_parent">
 
-    <ImageView
-        android:id="@+id/remedicationLogoIv"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/linearLayout3"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:adjustViewBounds="true"
-        android:maxHeight="150dp"
-        android:src="@drawable/remedication_logo"
+        android:layout_margin="12dp"
+        android:foregroundGravity="center"
+        android:gravity="center"
+        android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/remedicationLogoIv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:adjustViewBounds="true"
+            android:maxHeight="100dp"
+            android:src="@drawable/remedication_icon" />
+
+        <TextView
+            android:id="@+id/settingsTv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Settings"
+            android:textColor="#5F7DA3"
+            android:textSize="48sp"
+            android:textStyle="bold" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/linearLayout2"
@@ -25,18 +43,7 @@
         app:layout_constraintBottom_toTopOf="@+id/navBnv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/remedicationLogoIv">
-
-        <TextView
-            android:id="@+id/settingsTv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="12dp"
-            android:gravity="center"
-            android:text="Settings"
-            android:textColor="@color/black"
-            android:textSize="48sp"
-            android:textStyle="bold" />
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
         <Switch
             android:id="@+id/switch1"
