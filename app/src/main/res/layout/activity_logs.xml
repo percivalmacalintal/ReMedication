@@ -2,7 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <TextView
         android:id="@+id/logsTitleTv"
@@ -12,6 +13,7 @@
         android:layout_marginBottom="6dp"
         android:text="Logs"
         android:textAlignment="center"
+        android:textColor="@color/black"
         android:textSize="48sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@id/searchLl"
@@ -23,9 +25,9 @@
         android:id="@+id/searchLl"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="25dp"
         android:layout_marginTop="6dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="25dp"
         android:layout_marginBottom="6dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toTopOf="@id/logsRv"
@@ -49,32 +51,37 @@
                     android:id="@+id/monthSp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:dropDownWidth="wrap_content"
+                    android:textAlignment="viewStart" />
 
                 <Spinner
                     android:id="@+id/daySp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:textAlignment="viewStart" />
 
                 <Spinner
                     android:id="@+id/yearSp"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:layout_weight="1" />
+                    android:layout_weight="1"
+                    android:textAlignment="viewStart" />
             </LinearLayout>
 
             <Spinner
                 android:id="@+id/medicineSp"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
+                android:layout_height="wrap_content"
+                android:textAlignment="viewStart" />
         </LinearLayout>
 
         <ImageView
             android:id="@+id/imageView3"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_weight="7"
+            android:layout_weight="10"
             android:src="@drawable/baseline_search_24" />
 
     </LinearLayout>

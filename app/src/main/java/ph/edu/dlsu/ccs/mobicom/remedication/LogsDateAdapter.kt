@@ -3,9 +3,6 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 class LogsDateAdapter (private val LogsDates: List<LogsDate>) :
     RecyclerView.Adapter<LogsDateViewHolder>() {
@@ -23,6 +20,10 @@ class LogsDateAdapter (private val LogsDates: List<LogsDate>) :
         holder.logDateRecyclerView.adapter = adapter
 
         holder.itemView.setOnClickListener {
+            logsDate.flipIsExpanded()
+            notifyItemChanged(position)
+        }
+        holder.dropdownBtn.setOnClickListener {
             logsDate.flipIsExpanded()
             notifyItemChanged(position)
         }
