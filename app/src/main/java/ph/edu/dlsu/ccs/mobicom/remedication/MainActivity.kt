@@ -2,6 +2,8 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -10,13 +12,17 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class MainActivity : ComponentActivity() {
     private val sectionList: ArrayList<Section> = SectionDataGenerator.generateData()
     private lateinit var recyclerView: RecyclerView
+    private lateinit var emptyTv: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
         this.recyclerView = findViewById(R.id.sectionRv)
+        this.emptyTv = findViewById(R.id.emptyTv)
         this.recyclerView.adapter = SectionAdapter(this.sectionList)
+
+        showOrHideEmptyMessage(SectionAdapter(this.sectionList))
 
         this.recyclerView.layoutManager = LinearLayoutManager(this)
 
@@ -55,5 +61,14 @@ class MainActivity : ComponentActivity() {
         setIntent(intent)
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.homeIt  // Or whatever your home item ID is
+    }
+    private fun showOrHideEmptyMessage(adapter: SectionAdapter) {
+        if (adapter.isAllSectionsEmpty()) {
+            recyclerView.visibility = View.GONE
+            emptyTv.visibility      = View.VISIBLE
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            emptyTv.visibility      = View.GONE
+        }
     }
 }

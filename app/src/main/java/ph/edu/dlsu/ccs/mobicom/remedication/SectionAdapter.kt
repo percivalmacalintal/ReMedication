@@ -78,4 +78,7 @@ class SectionAdapter(private val sections: List<Section>) :
             }
         }
     }
+
+    fun isAllSectionsEmpty(): Boolean =
+        sections.all { it.checklist.isEmpty() }
 }
