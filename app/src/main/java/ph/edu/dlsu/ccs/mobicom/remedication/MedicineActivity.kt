@@ -21,8 +21,8 @@ class MedicineActivity : ComponentActivity() {
         if (result.resultCode == RESULT_OK) {
             val position = result.data?.getIntExtra(InfoActivity.POSITION_KEY, -1)
 
-            if (position != -1) { // If position is returned, it indicates an update or deletion
-                // Check if the result contains the updated data
+            if (position != -1) {
+                val updatedImage = result.data!!.getIntExtra(InfoActivity.IMAGE_KEY, 0)
                 val updatedName = result.data!!.getStringExtra(InfoActivity.NAME_KEY)
                 val updatedDosage = result.data!!.getIntExtra(InfoActivity.DOSAGE_KEY, 0)
                 val updatedUnit = result.data!!.getStringExtra(InfoActivity.UNIT_KEY) ?: ""
@@ -32,7 +32,7 @@ class MedicineActivity : ComponentActivity() {
                 val updatedStartDate = result.data!!.getStringExtra(InfoActivity.START_KEY) ?: ""
                 val updatedEndDate = result.data!!.getStringExtra(InfoActivity.END_KEY) ?: ""
                 if (updatedName != null) {
-                    medicineList[position!!] = Medicine(android.R.drawable.ic_menu_report_image, updatedName, updatedDosage, updatedUnit, updatedFrequency, updatedTimeOfDay, updatedRemaining, updatedStartDate, updatedEndDate)
+                    medicineList[position!!] = Medicine(updatedImage, updatedName, updatedDosage, updatedUnit, updatedFrequency, updatedTimeOfDay, updatedRemaining, updatedStartDate, updatedEndDate)
                     medAdapter.notifyItemChanged(position)
                 } else {
                     if (position != null) {
@@ -47,6 +47,7 @@ class MedicineActivity : ComponentActivity() {
     private val newMedicineResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
         if (result.resultCode == RESULT_OK) {
+            val image = result.data!!.getIntExtra(NewMedicineActivity.NEW_IMAGE_KEY, 0)
             val name = result.data!!.getStringExtra(NewMedicineActivity.NEW_NAME_KEY) ?: ""
             val dosage = result.data!!.getIntExtra(NewMedicineActivity.NEW_DOSAGE_KEY, 0)
             val unit = result.data!!.getStringExtra(NewMedicineActivity.NEW_UNIT_KEY) ?: ""
@@ -55,7 +56,7 @@ class MedicineActivity : ComponentActivity() {
             val remaining = result.data!!.getIntExtra(NewMedicineActivity.NEW_REMAINING_KEY, 0)
             val startDate = result.data!!.getStringExtra(NewMedicineActivity.NEW_START_KEY) ?: ""
             val endDate = result.data!!.getStringExtra(NewMedicineActivity.NEW_END_KEY) ?: ""
-            medicineList.add(Medicine(android.R.drawable.ic_menu_report_image, name, dosage, unit, frequency, timeOfDay, remaining, startDate, endDate))
+            medicineList.add(Medicine(image, name, dosage, unit, frequency, timeOfDay, remaining, startDate, endDate))
             medAdapter.notifyItemInserted(medicineList.size - 1)
         }
     }

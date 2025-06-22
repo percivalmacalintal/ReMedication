@@ -23,6 +23,7 @@ import java.util.Locale
 
 class InfoActivity : ComponentActivity() {
     companion object {
+        const val IMAGE_KEY = "IMAGE_KEY"
         const val NAME_KEY = "NAME_KEY"
         const val DOSAGE_KEY = "DOSAGE_KEY"
         const val UNIT_KEY = "UNIT_KEY"
@@ -36,7 +37,7 @@ class InfoActivity : ComponentActivity() {
 
     private lateinit var viewBinding: ActivityInfoBinding
 
-    private var isEditing = false
+    private var initialImage: Int = -1
     private var initialName: String = ""
     private var initialDosage: String = ""
     private var initialUnit: String = ""
@@ -47,6 +48,7 @@ class InfoActivity : ComponentActivity() {
     private var initialEndDate: String = ""
     private var initialPosition: Int = -1
 
+    private var isEditing = false
     private var defaultEditTextBackground: Drawable? = null
     private var selectedTimeOfDay = mutableListOf<Int>()
 
@@ -65,6 +67,8 @@ class InfoActivity : ComponentActivity() {
         viewBinding = ActivityInfoBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
+        initialImage = this.intent.getIntExtra(IMAGE_KEY, 0)
+        initialName = this.intent.getStringExtra(NAME_KEY) ?: ""
         initialName = this.intent.getStringExtra(NAME_KEY) ?: ""
         initialDosage = this.intent.getIntExtra(DOSAGE_KEY, 0).toString()
         initialUnit = this.intent.getStringExtra(UNIT_KEY) ?: ""
@@ -78,6 +82,7 @@ class InfoActivity : ComponentActivity() {
         confirmedFrequency  = initialFrequency
         confirmedTimeOfDay = initialTimeOfDay.toMutableList()
 
+        viewBinding.medicineIv.setImageResource(initialImage)
         viewBinding.namevalEt.setText(initialName)
         viewBinding.dosvalEt.setText(initialDosage)
         viewBinding.remvalEt.setText(initialRemaining)
@@ -153,6 +158,7 @@ class InfoActivity : ComponentActivity() {
 
                 viewBinding.saveBtn.visibility = View.VISIBLE
                 viewBinding.delBtn.visibility = View.VISIBLE
+                viewBinding.edtImgBtn.visibility = View.VISIBLE
 
                 enableSaveButtonIfChanges(viewBinding)
             } else {
@@ -393,6 +399,8 @@ class InfoActivity : ComponentActivity() {
 
         viewBinding.saveBtn.visibility = View.GONE
         viewBinding.delBtn.visibility = View.GONE
+
+        viewBinding.edtImgBtn.visibility = View.GONE
     }
 
     private fun formatFrequencyLabel(freq: String, timeOfDay: List<Int>): String {
