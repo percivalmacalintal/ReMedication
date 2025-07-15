@@ -3,6 +3,7 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.res.ColorStateList
 import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
@@ -11,8 +12,13 @@ import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.graphics.toColorInt
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import ph.edu.dlsu.ccs.mobicom.remedication.databinding.ActivityNewMedicineBinding
 import ph.edu.dlsu.ccs.mobicom.remedication.databinding.DialogTimeofdaySelectionBinding
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.GregorianCalendar
@@ -39,12 +45,38 @@ class NewMedicineActivity : ComponentActivity(){
 
     private val units = arrayOf("mg", "ml")
     private val frequencies = arrayOf("Select frequency...", "Once a day", "Twice a day", "Thrice a day")
-    private val resId = R.drawable.medicine
 
     private var previousFreqPosition = 0
     private var restoringSpinner = false
 
     private var imageAdded = false
+
+    private lateinit var confirmedPhotoFile : File
+    private lateinit var medicinePhotoFile: File
+
+    private val cameraActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            Glide.with(viewBinding.medicineIv).load(confirmedPhotoFile).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).centerCrop().into(viewBinding.medicineIv)
+            imageAdded = true
+            viewBinding.addImgBtn.text = getString(R.string.edtImgBtnText)
+            viewBinding.addImgBtn.backgroundTintList = ColorStateList.valueOf("#FFAB00".toColorInt())
+        }
+    }
+
+    private val galleryActivityResultLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            contentResolver.openInputStream(uri)?.use { input ->
+                confirmedPhotoFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            Glide.with(viewBinding.medicineIv).load(it).centerCrop().into(viewBinding.medicineIv)
+            viewBinding.medicineIv.visibility = View.VISIBLE
+            imageAdded = true
+            viewBinding.addImgBtn.text = getString(R.string.edtImgBtnText)
+            viewBinding.addImgBtn.backgroundTintList = ColorStateList.valueOf("#FFAB00".toColorInt())
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,12 +100,20 @@ class NewMedicineActivity : ComponentActivity(){
         freqAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         viewBinding.freqvalSp.adapter = freqAdapter
 
+        confirmedPhotoFile = File(cacheDir, "confirmed.jpg")
+
         viewBinding.closeBtn.setOnClickListener {
+            if (confirmedPhotoFile.exists()) {
+                confirmedPhotoFile.delete()
+            }
             finish()
         }
 
         viewBinding.addMedBtn.setOnClickListener {
-            val image = resId
+            val filename = "med_${System.currentTimeMillis()}.jpg"
+            medicinePhotoFile = File(filesDir, filename)
+            confirmedPhotoFile.copyTo(medicinePhotoFile)
+            val image = medicinePhotoFile.absolutePath
             val name = viewBinding.namevalEt.text.toString().trim()
             val dosage = viewBinding.dosvalEt.text.toString().trim()
             val remaining = viewBinding.remvalEt.text.toString().trim()
@@ -142,12 +182,22 @@ class NewMedicineActivity : ComponentActivity(){
         }
 
         viewBinding.freqvalSp.setSelection(0)
-
-        viewBinding.medicineIv.setImageResource(android.R.color.transparent)
         viewBinding.addImgBtn.setOnClickListener {
-            viewBinding.medicineIv.setImageResource(resId)
-            viewBinding.addImgBtn.visibility = View.GONE
-            imageAdded = true
+            val options = arrayOf("Take Photo", "Choose from Gallery")
+            AlertDialog.Builder(this)
+                .setTitle("Select Image Source")
+                .setItems(options) { _, which ->
+                    when (which) {
+                        0 -> {
+                            val intent = Intent(this, CameraActivity::class.java)
+                            cameraActivityResultLauncher.launch(intent)
+                        }
+                        1 -> {
+                            galleryActivityResultLauncher.launch("image/*")
+                        }
+                    }
+                }
+                .show()
         }
     }
 
