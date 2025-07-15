@@ -2,35 +2,35 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 
 class SettingsDataGenerator {
     companion object {
-        fun generateData(): ArrayList<Settings> {
-            val tempList = ArrayList<Settings>()
+        fun generateData(): ArrayList<Setting> {
+            val tempList = ArrayList<Setting>()
 
             tempList.add(
-                Settings(
+                Setting(
                     "Early Morning",
-                    arrayListOf("12:00 AM", "1:00 AM", "2:00 AM", "3:00 AM", "4:00 AM", "5:00 AM")
+                    arrayListOf("12:00 AM", "01:00 AM", "02:00 AM", "03:00 AM", "04:00 AM", "05:00 AM")
                 )
             )
             tempList.add(
-                Settings(
+                Setting(
                     "Morning",
-                    arrayListOf("6:00 AM", "7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM", "11:00 AM")
+                    arrayListOf("06:00 AM", "07:00 AM", "08:00 AM", "09:00 AM", "10:00 AM", "11:00 AM")
                 )
             )
             tempList.add(
-                Settings(
+                Setting(
                     "Afternoon",
-                    arrayListOf("12:00 PM", "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM")
+                    arrayListOf("12:00 PM", "01:00 PM", "02:00 PM", "03:00 PM", "04:00 PM", "05:00 PM")
                 )
             )
             tempList.add(
-                Settings(
+                Setting(
                     "Night",
-                    arrayListOf("6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM", "10:00 PM", "11:00 PM")
+                    arrayListOf("06:00 PM", "07:00 PM", "08:00 PM", "09:00 PM", "10:00 PM", "11:00 PM")
                 )
             )
             tempList.add(
-                Settings(
+                Setting(
                     "Days Left Before Refill",
                     arrayListOf("1 Day", "2 Days", "3 Days", "4 Days", "5 Days", "6 Days", "7 Days")
                 )

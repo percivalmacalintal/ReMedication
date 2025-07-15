@@ -46,7 +46,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout3">
 
         <Switch
-            android:id="@+id/switch1"
+            android:id="@+id/notificationSw"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="12dp"

@@ -4,7 +4,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView.Adapter
 
-class SettingsAdapter(private val settings: ArrayList<Settings>): Adapter<SettingsViewHolder>() {
+class SettingsAdapter(private val settings: ArrayList<Setting>, private val onReminderChanged: () -> Unit): Adapter<SettingsViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SettingsViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         val view = inflater.inflate(R.layout.settings_layout, parent, false)
@@ -12,7 +12,7 @@ class SettingsAdapter(private val settings: ArrayList<Settings>): Adapter<Settin
     }
     override fun onBindViewHolder(holder: SettingsViewHolder, position: Int) {
         val setting = settings[position]
-        holder.bindData(setting, position, this)
+        holder.bindData(setting, position, this, onReminderChanged)
     }
 
     override fun getItemCount(): Int {
