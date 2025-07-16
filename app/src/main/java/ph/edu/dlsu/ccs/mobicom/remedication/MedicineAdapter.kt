@@ -14,6 +14,7 @@ class MedicineAdapter(private val data: ArrayList<Medicine>, private val myActiv
         val myViewHolder = MedicineViewHolder(itemViewBinding)
         myViewHolder.itemView.setOnClickListener {
             val intent = Intent(myViewHolder.itemView.context, InfoActivity::class.java)
+            intent.putExtra(InfoActivity.ID_KEY, data[myViewHolder.absoluteAdapterPosition].id)
             intent.putExtra(InfoActivity.IMAGE_KEY, data[myViewHolder.absoluteAdapterPosition].imageId)
             intent.putExtra(InfoActivity.NAME_KEY, data[myViewHolder.absoluteAdapterPosition].name)
             intent.putExtra(InfoActivity.DOSAGE_KEY, data[myViewHolder.absoluteAdapterPosition].dosage)
