@@ -5,6 +5,7 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.drawable.Drawable
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -19,10 +20,12 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.GregorianCalendar
 import java.util.Locale
+import java.util.concurrent.Executors
 
 
 class InfoActivity : ComponentActivity() {
     companion object {
+        const val ID_KEY = "ID_KEY"
         const val IMAGE_KEY = "IMAGE_KEY"
         const val NAME_KEY = "NAME_KEY"
         const val DOSAGE_KEY = "DOSAGE_KEY"
@@ -33,10 +36,17 @@ class InfoActivity : ComponentActivity() {
         const val START_KEY = "START_KEY"
         const val END_KEY = "END_KEY"
         const val POSITION_KEY = "POSITION_KEY"
+
+        //Results
+        const val RESULT_EDIT = 200
+        const val RESULT_DELETE = 300
     }
 
+    private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var viewBinding: ActivityInfoBinding
+    private lateinit var myDbHelper: MyDbHelper
 
+    private var medicineId: Long = -1
     private var initialImage: Int = -1
     private var initialName: String = ""
     private var initialDosage: String = ""
@@ -46,7 +56,7 @@ class InfoActivity : ComponentActivity() {
     private var initialRemaining: String = ""
     private var initialStartDate: String = ""
     private var initialEndDate: String = ""
-    private var initialPosition: Int = -1
+//    private var initialPosition: Int = -1
 
     private var isEditing = false
     private var defaultEditTextBackground: Drawable? = null
@@ -67,6 +77,9 @@ class InfoActivity : ComponentActivity() {
         viewBinding = ActivityInfoBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
+        myDbHelper = MyDbHelper.getInstance(this@InfoActivity)!!
+
+        medicineId = this.intent.getLongExtra(ID_KEY, -1)
         initialImage = this.intent.getIntExtra(IMAGE_KEY, 0)
         initialName = this.intent.getStringExtra(NAME_KEY) ?: ""
         initialName = this.intent.getStringExtra(NAME_KEY) ?: ""
@@ -77,7 +90,7 @@ class InfoActivity : ComponentActivity() {
         initialRemaining = this.intent.getIntExtra(REMAINING_KEY, 0).toString()
         initialStartDate = this.intent.getStringExtra(START_KEY) ?: ""
         initialEndDate = this.intent.getStringExtra(END_KEY) ?: ""
-        initialPosition = this.intent.getIntExtra(POSITION_KEY, -1)
+//        initialPosition = this.intent.getIntExtra(POSITION_KEY, -1)
 
         confirmedFrequency  = initialFrequency
         confirmedTimeOfDay = initialTimeOfDay.toMutableList()
@@ -188,18 +201,36 @@ class InfoActivity : ComponentActivity() {
             builder.setMessage("Are you sure you want to save these changes?")
 
             builder.setPositiveButton("Yes") { _, _ ->
-                val returnIntent = Intent()
-                returnIntent.putExtra(NAME_KEY, updatedName)
-                returnIntent.putExtra(DOSAGE_KEY, updatedDosage.toInt())
-                returnIntent.putExtra(UNIT_KEY, updatedUnit)
-                returnIntent.putExtra(FREQUENCY_KEY, updatedFrequency)
-                returnIntent.putIntegerArrayListExtra(TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
-                returnIntent.putExtra(REMAINING_KEY, updatedRemaining.toInt())
-                returnIntent.putExtra(START_KEY, updatedStartDate)
-                returnIntent.putExtra(END_KEY, updatedEndDate)
-                returnIntent.putExtra(POSITION_KEY, initialPosition)
-                setResult(RESULT_OK, returnIntent)
-                finish()
+                executorService.execute {
+                    val updatedImage = this.intent.getIntExtra(IMAGE_KEY, 0)   //change when editable
+                    val medicine = Medicine(
+                        updatedImage,
+                        updatedName,
+                        updatedDosage.toInt(),
+                        updatedUnit,
+                        updatedFrequency,
+                        ArrayList(confirmedTimeOfDay),
+                        updatedRemaining.toInt(),
+                        updatedStartDate,
+                        updatedEndDate
+                    )
+                    myDbHelper.updateMedicine(medicine, medicineId)
+
+                    val returnIntent = Intent()
+                    returnIntent.putExtra(ID_KEY, medicineId)
+                    returnIntent.putExtra(IMAGE_KEY, updatedImage)
+                    returnIntent.putExtra(NAME_KEY, updatedName)
+                    returnIntent.putExtra(DOSAGE_KEY, updatedDosage.toInt())
+                    returnIntent.putExtra(UNIT_KEY, updatedUnit)
+                    returnIntent.putExtra(FREQUENCY_KEY, updatedFrequency)
+                    returnIntent.putIntegerArrayListExtra(TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
+                    returnIntent.putExtra(REMAINING_KEY, updatedRemaining.toInt())
+                    returnIntent.putExtra(START_KEY, updatedStartDate)
+                    returnIntent.putExtra(END_KEY, updatedEndDate)
+//                    returnIntent.putExtra(POSITION_KEY, initialPosition)
+                    setResult(RESULT_EDIT, returnIntent)
+                    finish()
+                }
             }
 
             builder.setNegativeButton("No") { dialog, _ ->
@@ -216,10 +247,15 @@ class InfoActivity : ComponentActivity() {
             builder.setMessage("Are you sure you want to delete this medicine? This action cannot be undone.")
 
             builder.setPositiveButton("Yes") { _, _ ->
-                val returnIntent = Intent()
-                returnIntent.putExtra(POSITION_KEY, this.intent.getIntExtra(POSITION_KEY, 0))
-                setResult(RESULT_OK, returnIntent)
-                finish()
+                val rowsDeleted = this.myDbHelper.deleteMedicine(medicineId)
+                if (rowsDeleted > 0) {
+                    val returnIntent = Intent()
+                    returnIntent.putExtra(POSITION_KEY, this.intent.getIntExtra(POSITION_KEY, 0))
+                    setResult(RESULT_DELETE, returnIntent)
+                    finish()
+                } else {
+                    Log.e("InfoActivity", "Delete failed for contact with id $medicineId")
+                }
             }
 
             builder.setNegativeButton("No") { dialog, _ ->

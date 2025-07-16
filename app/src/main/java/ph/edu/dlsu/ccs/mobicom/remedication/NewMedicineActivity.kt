@@ -23,9 +23,11 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.GregorianCalendar
 import java.util.Locale
+import java.util.concurrent.Executors
 
 class NewMedicineActivity : ComponentActivity(){
     companion object {
+        const val NEW_ID_KEY = "NEW_ID_KEY"
         const val NEW_IMAGE_KEY = "NEW_IMAGE_KEY"
         const val NEW_NAME_KEY = "NEW_NAME_KEY"
         const val NEW_DOSAGE_KEY = "NEW_DOSAGE_KEY"
@@ -37,7 +39,9 @@ class NewMedicineActivity : ComponentActivity(){
         const val NEW_END_KEY = "NEW_END_KEY"
     }
 
+    private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var viewBinding: ActivityNewMedicineBinding
+    private lateinit var myDbHelper: MyDbHelper
 
     private var selectedTimeOfDay = mutableListOf<Int>()
     private var confirmedTimeOfDay = mutableListOf<Int>()
@@ -135,18 +139,38 @@ class NewMedicineActivity : ComponentActivity(){
                 return@setOnClickListener
             }
 
-            val returnIntent = Intent()
-            returnIntent.putExtra(NEW_IMAGE_KEY, image)
-            returnIntent.putExtra(NEW_NAME_KEY, name)
-            returnIntent.putExtra(NEW_DOSAGE_KEY, dosage.toInt())
-            returnIntent.putExtra(NEW_UNIT_KEY, unit)
-            returnIntent.putExtra(NEW_FREQUENCY_KEY, frequency)
-            returnIntent.putIntegerArrayListExtra(NEW_TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
-            returnIntent.putExtra(NEW_REMAINING_KEY, remaining.toInt())
-            returnIntent.putExtra(NEW_START_KEY, startDate)
-            returnIntent.putExtra(NEW_END_KEY, endDate)
-            setResult(RESULT_OK, returnIntent)
-            finish()
+            if (areFieldsComplete()) {
+                executorService.execute {
+                    myDbHelper = MyDbHelper.getInstance(this@NewMedicineActivity)!!
+                    val medicine = Medicine(
+                        image,
+                        name,
+                        dosage.toInt(),
+                        unit,
+                        frequency,
+                        ArrayList(confirmedTimeOfDay),
+                        remaining.toInt(),
+                        startDate,
+                        endDate
+                    )
+                    val newId = myDbHelper.insertMedicine(medicine)
+
+                    val returnIntent = Intent()
+                    returnIntent.putExtra(NEW_ID_KEY, newId)
+                    returnIntent.putExtra(NEW_IMAGE_KEY, image)
+                    returnIntent.putExtra(NEW_NAME_KEY, name)
+                    returnIntent.putExtra(NEW_DOSAGE_KEY, dosage.toInt())
+                    returnIntent.putExtra(NEW_UNIT_KEY, unit)
+                    returnIntent.putExtra(NEW_FREQUENCY_KEY, frequency)
+                    returnIntent.putIntegerArrayListExtra(NEW_TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
+                    returnIntent.putExtra(NEW_REMAINING_KEY, remaining.toInt())
+                    returnIntent.putExtra(NEW_START_KEY, startDate)
+                    returnIntent.putExtra(NEW_END_KEY, endDate)
+                    setResult(RESULT_OK, returnIntent)
+                    finish()
+                }
+            }
+
         }
 
         viewBinding.freqvalSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -297,5 +321,16 @@ class NewMedicineActivity : ComponentActivity(){
             }
         }
         return timeLabels.joinToString(" & ")
+    }
+
+    private fun areFieldsComplete(): Boolean {
+        val name = viewBinding.namevalEt.text.isNotEmpty()
+        val dosage = viewBinding.dosvalEt.text.isNotEmpty()
+        val remaining = viewBinding.remvalEt.text.isNotEmpty()
+        val startDate = viewBinding.startvalEt.text.isNotEmpty()
+        val endDate = viewBinding.endvalEt.text.isNotEmpty()
+        val frequency = viewBinding.freqvalSp.selectedItem != "Select frequency..."
+
+        return name && dosage && remaining && startDate && endDate && frequency && imageAdded
     }
 }
