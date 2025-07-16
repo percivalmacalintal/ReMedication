@@ -31,7 +31,7 @@ class MedicineActivity : ComponentActivity() {
             val index = medicines.indexOfFirst { it.id == id }
 
             if (index != -1) {
-                val updatedImage = result.data!!.getIntExtra(InfoActivity.IMAGE_KEY, 0)
+                val updatedImage = result.data!!.getStringExtra(InfoActivity.IMAGE_KEY) ?: ""
                 val updatedName = result.data!!.getStringExtra(InfoActivity.NAME_KEY) ?: ""
                 val updatedDosage = result.data!!.getIntExtra(InfoActivity.DOSAGE_KEY, 0)
                 val updatedUnit = result.data!!.getStringExtra(InfoActivity.UNIT_KEY) ?: ""
@@ -65,7 +65,7 @@ class MedicineActivity : ComponentActivity() {
         ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
         if (result.resultCode == RESULT_OK) {
             val id = result.data!!.getLongExtra(NewMedicineActivity.NEW_ID_KEY, -1)
-            val image = result.data!!.getIntExtra(NewMedicineActivity.NEW_IMAGE_KEY, 0)
+            val image = result.data!!.getStringExtra(NewMedicineActivity.NEW_IMAGE_KEY) ?: ""
             val name = result.data!!.getStringExtra(NewMedicineActivity.NEW_NAME_KEY) ?: ""
             val dosage = result.data!!.getIntExtra(NewMedicineActivity.NEW_DOSAGE_KEY, 0)
             val unit = result.data!!.getStringExtra(NewMedicineActivity.NEW_UNIT_KEY) ?: ""

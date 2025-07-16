@@ -49,7 +49,7 @@ class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DAT
 
         while (cursor.moveToNext()) {
             val id = cursor.getLong(cursor.getColumnIndexOrThrow(DbReferences._ID))
-            val imageId = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_IMAGE_ID))
+            val imageId = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_IMAGE_ID))
             val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
             val dosage = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
             val unit = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_UNIT))
@@ -182,7 +182,7 @@ class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DAT
         const val CREATE_TABLE_STATEMENT =
             "CREATE TABLE IF NOT EXISTS $TABLE_NAME (" +
                     "$_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "$COLUMN_NAME_IMAGE_ID INTEGER, " +
+                    "$COLUMN_NAME_IMAGE_ID TEXT, " +
                     "$COLUMN_NAME_NAME TEXT, " +
                     "$COLUMN_NAME_DOSAGE INTEGER, " +
                     "$COLUMN_NAME_UNIT TEXT, " +

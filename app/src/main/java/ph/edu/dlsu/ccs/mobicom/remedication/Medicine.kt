@@ -5,7 +5,7 @@ import java.text.SimpleDateFormat
 
 class Medicine{
     var id: Long = -1
-    var imageId: Int = 0
+    var imageId: String = ""
     var name: String = ""
     var dosage: Int = 0
     var unit: String = ""
@@ -16,7 +16,7 @@ class Medicine{
     var end: Date = Date()
 
     // Constructor without ID
-    constructor(imageId: Int, name: String, dosage: Int, unit: String, frequency: String, timeOfDay: List<Int>, remaining: Int, start: String, end: String) {
+    constructor(imageId: String, name: String, dosage: Int, unit: String, frequency: String, timeOfDay: List<Int>, remaining: Int, start: String, end: String) {
         this.imageId = imageId
         this.name = name
         this.dosage = dosage
@@ -29,7 +29,7 @@ class Medicine{
     }
 
     // Constructor with ID
-    constructor(id: Long, imageId: Int, name: String, dosage: Int, unit: String, frequency: String, timeOfDay: List<Int>, remaining: Int, start: String, end: String) {
+    constructor(id: Long, imageId: String, name: String, dosage: Int, unit: String, frequency: String, timeOfDay: List<Int>, remaining: Int, start: String, end: String) {
         this.id = id
         this.imageId = imageId
         this.name = name

@@ -7,6 +7,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
+import com.bumptech.glide.Glide
 
 class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
     // In our item layout, we need two references -- an ImageView and a TextView. Please note that
@@ -18,7 +19,8 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
 
     // This is our own method that accepts a Character object and sets our views' info accordingly.
     fun bindData(checklist: Checklist, position: Int, adapter: ChecklistAdapter) {
-        iv.setImageResource(checklist.imageId)
+        Glide.with(iv).load(checklist.image).centerCrop().into(iv)
+
         mtv.text = checklist.medicineName
         dtv.text = checklist.dosage
         cb.isChecked = checklist.isChecked

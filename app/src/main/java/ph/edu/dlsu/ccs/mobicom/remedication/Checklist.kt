@@ -1,7 +1,7 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
-class Checklist (imageId: Int, medicineName: String, dosage: String) {
-    var imageId = imageId
+class Checklist (image: String, medicineName: String, dosage: String) {
+    var image = image
         private set
     var medicineName = medicineName
         private set

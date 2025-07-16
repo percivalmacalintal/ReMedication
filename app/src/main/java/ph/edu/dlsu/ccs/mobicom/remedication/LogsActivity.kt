@@ -14,7 +14,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class LogsActivity : ComponentActivity() {
     private val LogsDateList : ArrayList<LogsDate> = LogsDateGenerator.generateData()
-    private val MedicineList : ArrayList<Medicine> = MedicineGenerator.generateData()
+    private lateinit var MedicineList : ArrayList<Medicine>
+    private lateinit var myDbHelper: MyDbHelper
 
     private lateinit var monthSp: Spinner
     private lateinit var daySp: Spinner
@@ -26,7 +27,8 @@ class LogsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logs)
-
+        myDbHelper = MyDbHelper.getInstance(this@LogsActivity)!!
+        MedicineList = myDbHelper.getAllMedicinesDefault()
         //  set up spinners
         this.monthSp = findViewById(R.id.monthSp)
         this.daySp = findViewById(R.id.daySp)
@@ -59,7 +61,7 @@ class LogsActivity : ComponentActivity() {
         //  medicine
         val medicines = mutableListOf("Medicine Name")
         for (medicine in MedicineList) {
-            medicines.add(medicine.name.toString())
+            medicines.add(medicine.name)
         }
         val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
         medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

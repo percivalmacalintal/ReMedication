@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : ComponentActivity() {
-    private val sectionList: ArrayList<Section> = SectionDataGenerator.generateData()
+    private lateinit var sectionList: ArrayList<Section>
     private lateinit var recyclerView: RecyclerView
     private lateinit var emptyTv: TextView
 
@@ -20,11 +20,16 @@ class MainActivity : ComponentActivity() {
 
         this.recyclerView = findViewById(R.id.sectionRv)
         this.emptyTv = findViewById(R.id.emptyTv)
-        this.recyclerView.adapter = SectionAdapter(this.sectionList)
 
-        showOrHideEmptyMessage(SectionAdapter(this.sectionList))
+        SectionDataGenerator.generateData(this) { sections ->
+            sectionList = sections
 
-        this.recyclerView.layoutManager = LinearLayoutManager(this)
+            this.recyclerView.adapter = SectionAdapter(this.sectionList)
+
+            showOrHideEmptyMessage(SectionAdapter(this.sectionList))
+
+            this.recyclerView.layoutManager = LinearLayoutManager(this)
+        }
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.homeIt
@@ -69,6 +74,19 @@ class MainActivity : ComponentActivity() {
         } else {
             recyclerView.visibility = View.VISIBLE
             emptyTv.visibility      = View.GONE
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        SectionDataGenerator.generateData(this) { sections ->
+            sectionList = sections
+
+            this.recyclerView.adapter = SectionAdapter(this.sectionList)
+
+            showOrHideEmptyMessage(SectionAdapter(this.sectionList))
+
+            this.recyclerView.layoutManager = LinearLayoutManager(this)
         }
     }
 }
