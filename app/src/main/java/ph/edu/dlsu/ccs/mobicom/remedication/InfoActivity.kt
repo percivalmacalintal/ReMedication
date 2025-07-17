@@ -48,7 +48,7 @@ class InfoActivity : ComponentActivity() {
 
     private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var viewBinding: ActivityInfoBinding
-    private lateinit var myDbHelper: MyDbHelper
+    private lateinit var myDbHelper: MedicineDbHelper
 
     private var medicineId: Long = -1
     private var initialImage: String = ""
@@ -102,7 +102,7 @@ class InfoActivity : ComponentActivity() {
         viewBinding = ActivityInfoBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        myDbHelper = MyDbHelper.getInstance(this@InfoActivity)!!
+        myDbHelper = MedicineDbHelper.getInstance(this@InfoActivity)!!
 
         medicineId = this.intent.getLongExtra(ID_KEY, -1)
         initialImage = this.intent.getStringExtra(IMAGE_KEY) ?: ""

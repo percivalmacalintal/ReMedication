@@ -15,7 +15,7 @@ class SectionDataGenerator {
             executorService.execute {
                 // Perform the database operation in the background
                 val sections = ArrayList<Section>()
-                val myDbHelper = MyDbHelper.getInstance(context)
+                val myDbHelper = MedicineDbHelper.getInstance(context)
                 val medicineList = myDbHelper?.getAllMedicinesDefault() ?: emptyList()
 
                 val sectionTitles = listOf("Early Morning", "Morning", "Afternoon", "Night")

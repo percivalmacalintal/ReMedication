@@ -6,16 +6,16 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DATABASE_NAME, null, DbReferences.DATABASE_VERSION) {
+class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DATABASE_NAME, null, DbReferences.DATABASE_VERSION) {
 
     // The singleton pattern design
     companion object {
-        private var instance: MyDbHelper? = null
+        private var instance: MedicineDbHelper? = null
 
         @Synchronized
-        fun getInstance(context: Context): MyDbHelper? {
+        fun getInstance(context: Context): MedicineDbHelper? {
             if (instance == null) {
-                instance = MyDbHelper(context.applicationContext)
+                instance = MedicineDbHelper(context.applicationContext)
             }
             return instance
         }

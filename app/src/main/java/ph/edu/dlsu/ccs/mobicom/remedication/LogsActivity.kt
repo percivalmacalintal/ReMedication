@@ -15,7 +15,8 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 class LogsActivity : ComponentActivity() {
     private val LogsDateList : ArrayList<LogsDate> = LogsDateGenerator.generateData()
     private lateinit var MedicineList : ArrayList<Medicine>
-    private lateinit var myDbHelper: MyDbHelper
+    private lateinit var LogDbHelper: LogDbHelper
+    private lateinit var MedicineDbHelper: MedicineDbHelper
 
     private lateinit var monthSp: Spinner
     private lateinit var daySp: Spinner
@@ -27,8 +28,8 @@ class LogsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logs)
-        myDbHelper = MyDbHelper.getInstance(this@LogsActivity)!!
-        MedicineList = myDbHelper.getAllMedicinesDefault()
+//        LogsDateList = LogDbHelper.getInstance(this@LogsActivity)!!
+        MedicineList = MedicineDbHelper.getAllMedicinesDefault()
         //  set up spinners
         this.monthSp = findViewById(R.id.monthSp)
         this.daySp = findViewById(R.id.daySp)
