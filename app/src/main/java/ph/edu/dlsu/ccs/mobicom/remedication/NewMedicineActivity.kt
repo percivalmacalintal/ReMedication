@@ -41,7 +41,7 @@ class NewMedicineActivity : ComponentActivity(){
 
     private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var viewBinding: ActivityNewMedicineBinding
-    private lateinit var myDbHelper: MedicineDbHelper
+    private lateinit var myDbHelper: MyDbHelper
 
     private var selectedTimeOfDay = mutableListOf<Int>()
     private var confirmedTimeOfDay = mutableListOf<Int>()
@@ -114,10 +114,6 @@ class NewMedicineActivity : ComponentActivity(){
         }
 
         viewBinding.addMedBtn.setOnClickListener {
-            val filename = "med_${System.currentTimeMillis()}.jpg"
-            medicinePhotoFile = File(filesDir, filename)
-            confirmedPhotoFile.copyTo(medicinePhotoFile)
-            val image = medicinePhotoFile.absolutePath
             val name = viewBinding.namevalEt.text.toString().trim()
             val dosage = viewBinding.dosvalEt.text.toString().trim()
             val remaining = viewBinding.remvalEt.text.toString().trim()
@@ -134,43 +130,51 @@ class NewMedicineActivity : ComponentActivity(){
                 return@setOnClickListener
             }
 
+            val filename = "${System.currentTimeMillis()}.jpg"
+            medicinePhotoFile = File(filesDir, filename)
+            confirmedPhotoFile.copyTo(medicinePhotoFile)
+            confirmedPhotoFile.delete()
+            val image = medicinePhotoFile.absolutePath
+
             if (confirmedTimeOfDay.isEmpty()) {
                 Toast.makeText(this, "Please choose time(s) of day", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            if (areFieldsComplete()) {
-                executorService.execute {
-                    myDbHelper = MedicineDbHelper.getInstance(this@NewMedicineActivity)!!
-                    val medicine = Medicine(
-                        image,
-                        name,
-                        dosage.toInt(),
-                        unit,
-                        frequency,
-                        ArrayList(confirmedTimeOfDay),
-                        remaining.toInt(),
-                        startDate,
-                        endDate
-                    )
-                    val newId = myDbHelper.insertMedicine(medicine)
-
-                    val returnIntent = Intent()
-                    returnIntent.putExtra(NEW_ID_KEY, newId)
-                    returnIntent.putExtra(NEW_IMAGE_KEY, image)
-                    returnIntent.putExtra(NEW_NAME_KEY, name)
-                    returnIntent.putExtra(NEW_DOSAGE_KEY, dosage.toInt())
-                    returnIntent.putExtra(NEW_UNIT_KEY, unit)
-                    returnIntent.putExtra(NEW_FREQUENCY_KEY, frequency)
-                    returnIntent.putIntegerArrayListExtra(NEW_TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
-                    returnIntent.putExtra(NEW_REMAINING_KEY, remaining.toInt())
-                    returnIntent.putExtra(NEW_START_KEY, startDate)
-                    returnIntent.putExtra(NEW_END_KEY, endDate)
-                    setResult(RESULT_OK, returnIntent)
-                    finish()
-                }
+            if (isEndDateEarlierThanStartDate(startDate, endDate)) {
+                Toast.makeText(this, "End date cannot be earlier than Start date", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
 
+            executorService.execute {
+                myDbHelper = MyDbHelper.getInstance(this@NewMedicineActivity)!!
+                val medicine = Medicine(
+                    image,
+                    name,
+                    dosage.toInt(),
+                    unit,
+                    frequency,
+                    ArrayList(confirmedTimeOfDay),
+                    remaining.toInt(),
+                    startDate,
+                    endDate
+                )
+                val newId = myDbHelper.insertMedicine(medicine)
+
+                val returnIntent = Intent()
+                returnIntent.putExtra(NEW_ID_KEY, newId)
+                returnIntent.putExtra(NEW_IMAGE_KEY, image)
+                returnIntent.putExtra(NEW_NAME_KEY, name)
+                returnIntent.putExtra(NEW_DOSAGE_KEY, dosage.toInt())
+                returnIntent.putExtra(NEW_UNIT_KEY, unit)
+                returnIntent.putExtra(NEW_FREQUENCY_KEY, frequency)
+                returnIntent.putIntegerArrayListExtra(NEW_TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
+                returnIntent.putExtra(NEW_REMAINING_KEY, remaining.toInt())
+                returnIntent.putExtra(NEW_START_KEY, startDate)
+                returnIntent.putExtra(NEW_END_KEY, endDate)
+                setResult(RESULT_OK, returnIntent)
+                finish()
+            }
         }
 
         viewBinding.freqvalSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
@@ -323,14 +327,16 @@ class NewMedicineActivity : ComponentActivity(){
         return timeLabels.joinToString(" & ")
     }
 
-    private fun areFieldsComplete(): Boolean {
-        val name = viewBinding.namevalEt.text.isNotEmpty()
-        val dosage = viewBinding.dosvalEt.text.isNotEmpty()
-        val remaining = viewBinding.remvalEt.text.isNotEmpty()
-        val startDate = viewBinding.startvalEt.text.isNotEmpty()
-        val endDate = viewBinding.endvalEt.text.isNotEmpty()
-        val frequency = viewBinding.freqvalSp.selectedItem != "Select frequency..."
+    private fun isEndDateEarlierThanStartDate(startDate: String, endDate: String): Boolean {
+        val dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
 
-        return name && dosage && remaining && startDate && endDate && frequency && imageAdded
+        val start = dateFormat.parse(startDate)
+        val end = dateFormat.parse(endDate)
+
+        if (start == null || end == null) {
+            return false
+        }
+
+        return end.before(start)
     }
 }

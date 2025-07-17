@@ -10,14 +10,12 @@ import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import java.util.concurrent.Executors
+
 
 class LogsActivity : ComponentActivity() {
-    private val executorService = Executors.newSingleThreadExecutor()
-    private val logsDateList : ArrayList<LogsDate> = LogsDateGenerator.generateData()
-    private lateinit var medicineList : ArrayList<Medicine>
-    private lateinit var myLogDbHelper: LogDbHelper
-    private lateinit var myMedicineDbHelper: MedicineDbHelper
+    private val LogsDateList : ArrayList<LogsDate> = LogsDateGenerator.generateData()
+    private lateinit var MedicineList : ArrayList<Medicine>
+    private lateinit var myDbHelper: MyDbHelper
 
     private lateinit var monthSp: Spinner
     private lateinit var daySp: Spinner
@@ -29,7 +27,8 @@ class LogsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logs)
-
+        myDbHelper = MyDbHelper.getInstance(this@LogsActivity)!!
+        MedicineList = myDbHelper.getAllMedicinesDefault()
         //  set up spinners
         this.monthSp = findViewById(R.id.monthSp)
         this.daySp = findViewById(R.id.daySp)
@@ -60,17 +59,13 @@ class LogsActivity : ComponentActivity() {
         yearSp.adapter = yearAdapter
 
         //  medicine
-        executorService.execute {
-            myMedicineDbHelper = MedicineDbHelper.getInstance(this@LogsActivity)!!
-            medicineList = myMedicineDbHelper.getAllMedicinesDefault()
-            val medicines = mutableListOf("Medicine Name")
-            for (medicine in medicineList) {
-                medicines.add(medicine.name.toString())
-            }
-            val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
-            medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            medicineSp.adapter = medicineAdapter
+        val medicines = mutableListOf("Medicine Name")
+        for (medicine in MedicineList) {
+            medicines.add(medicine.name)
         }
+        val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
+        medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        medicineSp.adapter = medicineAdapter
 
         monthSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
@@ -87,7 +82,7 @@ class LogsActivity : ComponentActivity() {
         }
 
         this.recyclerView = findViewById(R.id.logsRv)
-        this.recyclerView.adapter = LogsDateAdapter(this.logsDateList)
+        this.recyclerView.adapter = LogsDateAdapter(this.LogsDateList)
         this.recyclerView.layoutManager = LinearLayoutManager(this)
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)

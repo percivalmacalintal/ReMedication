@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.drawable.Drawable
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -14,7 +13,10 @@ import android.widget.CompoundButton
 import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.widget.addTextChangedListener
+import com.bumptech.glide.Glide
+import com.bumptech.glide.load.engine.DiskCacheStrategy
 import ph.edu.dlsu.ccs.mobicom.remedication.databinding.ActivityInfoBinding
 import ph.edu.dlsu.ccs.mobicom.remedication.databinding.DialogTimeofdaySelectionBinding
 import java.io.File
@@ -46,7 +48,7 @@ class InfoActivity : ComponentActivity() {
 
     private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var viewBinding: ActivityInfoBinding
-    private lateinit var myDbHelper: MedicineDbHelper
+    private lateinit var myDbHelper: MyDbHelper
 
     private var medicineId: Long = -1
     private var initialImage: String = ""
@@ -73,13 +75,34 @@ class InfoActivity : ComponentActivity() {
     private val units = arrayOf("mg", "ml")
     private val frequencies = arrayOf("Once a day", "Twice a day", "Thrice a day")
 
+    private var imageChanged = false
+    private lateinit var confirmedPhotoFile : File
+    private lateinit var medicinePhotoFile: File
+    private val cameraActivityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == RESULT_OK) {
+            Glide.with(viewBinding.medicineIv).load(confirmedPhotoFile).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).centerCrop().into(viewBinding.medicineIv)
+            imageChanged = true
+        }
+    }
+
+    private val galleryActivityResultLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let {
+            contentResolver.openInputStream(uri)?.use { input ->
+                confirmedPhotoFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            Glide.with(viewBinding.medicineIv).load(it).centerCrop().into(viewBinding.medicineIv)
+            imageChanged = true
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         viewBinding = ActivityInfoBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        myDbHelper = MedicineDbHelper.getInstance(this@InfoActivity)!!
+        myDbHelper = MyDbHelper.getInstance(this@InfoActivity)!!
 
         medicineId = this.intent.getLongExtra(ID_KEY, -1)
         initialImage = this.intent.getStringExtra(IMAGE_KEY) ?: ""
@@ -97,9 +120,7 @@ class InfoActivity : ComponentActivity() {
         confirmedFrequency  = initialFrequency
         confirmedTimeOfDay = initialTimeOfDay.toMutableList()
 
-        val imageUri = Uri.fromFile(File(initialImage))
-        viewBinding.medicineIv.setImageURI(imageUri)  // Set the image using the Uri
-
+        Glide.with(viewBinding.medicineIv).load(initialImage).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).centerCrop().into(viewBinding.medicineIv)
         viewBinding.namevalEt.setText(initialName)
         viewBinding.dosvalEt.setText(initialDosage)
         viewBinding.remvalEt.setText(initialRemaining)
@@ -190,6 +211,9 @@ class InfoActivity : ComponentActivity() {
             val updatedStartDate = viewBinding.startvalEt.text.toString().trim()
             val updatedEndDate = viewBinding.endvalEt.text.toString().trim()
 
+            val updatedUnit = viewBinding.unitvalSp.selectedItem.toString()
+            val updatedFrequency = viewBinding.freqvalSp.selectedItem.toString()
+
             if (updatedName.isEmpty() || updatedDosage.isEmpty() || updatedRemaining.isEmpty() ||
                 updatedStartDate.isEmpty() || updatedEndDate.isEmpty()) {
 
@@ -197,8 +221,28 @@ class InfoActivity : ComponentActivity() {
                 return@setOnClickListener
             }
 
-            val updatedUnit = viewBinding.unitvalSp.selectedItem.toString()
-            val updatedFrequency = viewBinding.freqvalSp.selectedItem.toString()
+            if (confirmedTimeOfDay.isEmpty()) {
+                Toast.makeText(this, "Please choose time(s) of day", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (isEndDateEarlierThanStartDate(updatedStartDate, updatedEndDate)) {
+                Toast.makeText(this, "End date cannot be earlier than Start date", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val updatedImage: String
+            if (imageChanged) {
+                medicinePhotoFile = File(filesDir, initialImage)
+                medicinePhotoFile.delete()
+                val filename = "${System.currentTimeMillis()}.jpg"
+                medicinePhotoFile = File(filesDir, filename)
+                confirmedPhotoFile.copyTo(medicinePhotoFile)
+                confirmedPhotoFile.delete()
+                updatedImage = medicinePhotoFile.absolutePath
+            } else {
+                updatedImage = initialImage
+            }
 
             val builder = AlertDialog.Builder(this)
             builder.setTitle("Confirm Changes")
@@ -206,7 +250,6 @@ class InfoActivity : ComponentActivity() {
 
             builder.setPositiveButton("Yes") { _, _ ->
                 executorService.execute {
-                    val updatedImage = this.intent.getStringExtra(IMAGE_KEY) ?: ""   //change when editable
                     val medicine = Medicine(
                         updatedImage,
                         updatedName,
@@ -227,11 +270,14 @@ class InfoActivity : ComponentActivity() {
                     returnIntent.putExtra(DOSAGE_KEY, updatedDosage.toInt())
                     returnIntent.putExtra(UNIT_KEY, updatedUnit)
                     returnIntent.putExtra(FREQUENCY_KEY, updatedFrequency)
-                    returnIntent.putIntegerArrayListExtra(TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
+                    returnIntent.putIntegerArrayListExtra(
+                        TIMEOFDAY_KEY,
+                        ArrayList(confirmedTimeOfDay)
+                    )
                     returnIntent.putExtra(REMAINING_KEY, updatedRemaining.toInt())
                     returnIntent.putExtra(START_KEY, updatedStartDate)
                     returnIntent.putExtra(END_KEY, updatedEndDate)
-//                    returnIntent.putExtra(POSITION_KEY, initialPosition)
+                    //                    returnIntent.putExtra(POSITION_KEY, initialPosition)
                     setResult(RESULT_EDIT, returnIntent)
                     finish()
                 }
@@ -270,6 +316,9 @@ class InfoActivity : ComponentActivity() {
         }
 
         viewBinding.closeBtn.setOnClickListener {
+            if (confirmedPhotoFile.exists()) {
+                confirmedPhotoFile.delete()
+            }
             finish()
         }
 
@@ -323,6 +372,24 @@ class InfoActivity : ComponentActivity() {
                 )
             }
             override fun onNothingSelected(parent: AdapterView<*>) {}
+        }
+        confirmedPhotoFile = File(cacheDir, "confirmed.jpg")
+        viewBinding.edtImgBtn.setOnClickListener {
+            val options = arrayOf("Take Photo", "Choose from Gallery")
+            AlertDialog.Builder(this)
+                .setTitle("Select Image Source")
+                .setItems(options) { _, which ->
+                    when (which) {
+                        0 -> {
+                            val intent = Intent(this, CameraActivity::class.java)
+                            cameraActivityResultLauncher.launch(intent)
+                        }
+                        1 -> {
+                            galleryActivityResultLauncher.launch("image/*")
+                        }
+                    }
+                }
+                .show()
         }
     }
 
@@ -393,6 +460,8 @@ class InfoActivity : ComponentActivity() {
     }
 
     private fun disableEditing() {
+        imageChanged = false
+        Glide.with(viewBinding.medicineIv).load(initialImage).skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE).centerCrop().into(viewBinding.medicineIv)
         viewBinding.namevalEt.setText(initialName)
         viewBinding.dosvalEt.setText(initialDosage)
         viewBinding.remvalEt.setText(initialRemaining)
@@ -499,5 +568,18 @@ class InfoActivity : ComponentActivity() {
             }
         }
         return timeLabels.joinToString(" & ")
+    }
+
+    private fun isEndDateEarlierThanStartDate(startDate: String, endDate: String): Boolean {
+        val dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+
+        val start = dateFormat.parse(startDate)
+        val end = dateFormat.parse(endDate)
+
+        if (start == null || end == null) {
+            return false
+        }
+
+        return end.before(start)
     }
 }

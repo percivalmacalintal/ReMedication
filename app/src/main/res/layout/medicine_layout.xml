@@ -17,12 +17,12 @@
             android:orientation="vertical">
 
             <ImageView
-                android:id="@+id/MedicineIv"
+                android:id="@+id/medicineIv"
                 android:layout_width="match_parent"
                 android:layout_height="125dp"
                 android:layout_marginBottom="6dp"
-                android:background="@drawable/image_border"
-                android:padding="16dp"
+                android:background="@drawable/rounded_white"
+                android:clipToOutline="true"
                 tools:src="@tools:sample/avatars" />
 
             <TextView
