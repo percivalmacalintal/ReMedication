@@ -10,13 +10,17 @@ import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.util.Calendar
+import java.util.concurrent.Executors
+import java.util.Date
 
 
 class LogsActivity : ComponentActivity() {
-    private val LogsDateList : ArrayList<LogsDate> = LogsDateGenerator.generateData()
+    private val executorService = Executors.newSingleThreadExecutor()
+    private lateinit var LogsDateList : ArrayList<LogsDate>
     private lateinit var MedicineList : ArrayList<Medicine>
-    private lateinit var LogDbHelper: LogDbHelper
-    private lateinit var MedicineDbHelper: MedicineDbHelper
+    private lateinit var myMedicineDbHelper: MedicineDbHelper
+    private lateinit var dates: ArrayList<Date>
 
     private lateinit var monthSp: Spinner
     private lateinit var daySp: Spinner
@@ -28,8 +32,25 @@ class LogsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logs)
-//        LogsDateList = LogDbHelper.getInstance(this@LogsActivity)!!
-        MedicineList = MedicineDbHelper.getAllMedicinesDefault()
+
+        dates = ArrayList()
+        val calendar = Calendar.getInstance()
+        for (i in 0..4) {
+            calendar.time = Date() // Reset to the current date
+            calendar.add(Calendar.DAY_OF_YEAR, -i) // Subtract i days from the current date
+            dates.add(calendar.time) // Add the date to the list
+        }
+
+        this.recyclerView = findViewById(R.id.logsRv)
+
+        LogsDateGenerator.generateLogsDates(this, dates) { logsDates ->
+            LogsDateList = logsDates
+
+            this.recyclerView.adapter = LogsDateAdapter(this.LogsDateList)
+
+            this.recyclerView.layoutManager = LinearLayoutManager(this)
+        }
+
         //  set up spinners
         this.monthSp = findViewById(R.id.monthSp)
         this.daySp = findViewById(R.id.daySp)
@@ -60,13 +81,17 @@ class LogsActivity : ComponentActivity() {
         yearSp.adapter = yearAdapter
 
         //  medicine
-        val medicines = mutableListOf("Medicine Name")
-        for (medicine in MedicineList) {
-            medicines.add(medicine.name)
+        executorService.execute {
+            myMedicineDbHelper = MedicineDbHelper.getInstance(this@LogsActivity)!!
+            MedicineList = myMedicineDbHelper.getAllMedicinesDefault()
+            val medicines = mutableListOf("Medicine Name")
+            for (medicine in MedicineList) {
+                medicines.add(medicine.name)
+            }
+            val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
+            medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            medicineSp.adapter = medicineAdapter
         }
-        val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
-        medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        medicineSp.adapter = medicineAdapter
 
         monthSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
@@ -81,10 +106,6 @@ class LogsActivity : ComponentActivity() {
             }
             override fun onNothingSelected(parentView: AdapterView<*>?) {}
         }
-
-        this.recyclerView = findViewById(R.id.logsRv)
-        this.recyclerView.adapter = LogsDateAdapter(this.LogsDateList)
-        this.recyclerView.layoutManager = LinearLayoutManager(this)
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.logsIt

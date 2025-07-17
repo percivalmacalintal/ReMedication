@@ -12,8 +12,8 @@ class Log{
     var dosage: String = ""
     var isMissed: Boolean = true
 
-    constructor(date: Date, time: String, name: String, amount: Int, dosage: String, isMissed: Boolean) {
-        this.date = date
+    constructor(date: String, time: String, name: String, amount: Int, dosage: String, isMissed: Boolean) {
+        this.date = parseDate(date)
         this.time = time
         this.name = name
         this.amount = amount
@@ -21,27 +21,15 @@ class Log{
         this.isMissed = isMissed
     }
 
-    constructor(id: Long, date: Date, time: String, name: String, amount: Int, dosage: String, isMissed: Boolean) {
+    constructor(id: Long, date: String, time: String, name: String, amount: Int, dosage: String, isMissed: Boolean) {
         this.id = id
-        this.date = date
+        this.date = parseDate(date)
         this.time = time
         this.name = name
         this.amount = amount
         this.dosage = dosage
         this.isMissed = isMissed
     }
-
-//    var date = date
-//        private set
-//    var time = time
-//        private set
-//    var name = name
-//        private set
-//    var amount = amount
-//        private set
-//    var dosage = dosage
-//        private set
-//    private var isMissed = isMissed
 
     fun getIsMissed(): Boolean{
         return this.isMissed

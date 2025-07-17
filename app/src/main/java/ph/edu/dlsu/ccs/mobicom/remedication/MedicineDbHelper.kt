@@ -164,7 +164,7 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
     }
 
     private object DbReferences {
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
         const val DATABASE_NAME = "my_database.db"
 
         const val TABLE_NAME = "medicines"

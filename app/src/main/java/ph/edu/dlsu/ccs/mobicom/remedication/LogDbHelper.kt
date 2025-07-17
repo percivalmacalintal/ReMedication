@@ -5,7 +5,9 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import java.text.SimpleDateFormat
 import java.util.Date
+import java.util.Locale
 
 class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DATABASE_NAME, null, DbReferences.DATABASE_VERSION)  {
     // The singleton pattern design
@@ -61,7 +63,7 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
             // Create a Log object and add it to the list
             val log = Log(
                 id,
-                Date(),
+                date,
                 time,
                 name,
                 amount,
@@ -78,6 +80,55 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
         return logs
     }
 
+    fun getAllLogsDate(date: Date): ArrayList<Log> {
+        val database: SQLiteDatabase = this.readableDatabase
+
+        // Format the date parameter to match the date format in the database (e.g., YYYY-MM-DD)
+        val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
+
+        // Query rows from the logs table where the date matches the specified date
+        val cursor: Cursor = database.query(
+            DbReferences.TABLE_NAME, // Table name
+            null, // All columns
+            DbReferences.COLUMN_NAME_DATE + " = ?", // Where clause to filter by date
+            arrayOf(formattedDate), // Arguments for the WHERE clause
+            null, // No group by
+            null, // No having
+            DbReferences.COLUMN_NAME_DATE + " DESC", // Order by date in descending order
+            null // No limit
+        )
+
+        val logs = ArrayList<Log>()
+
+        // Iterate through all the rows in the cursor
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(cursor.getColumnIndexOrThrow(DbReferences._ID))
+            val date = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DATE))
+            val time = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_TIME))
+            val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
+            val amount = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_AMOUNT))
+            val dosage = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
+            val isMissed = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_ISMISSED)) == 1 // Convert 1 to true and 0 to false
+
+            // Create a Log object and add it to the list
+            val log = Log(
+                id,
+                date,
+                time,
+                name,
+                amount,
+                dosage,
+                isMissed
+            )
+
+            logs.add(log)
+        }
+
+        cursor.close()
+        database.close()
+
+        return logs
+    }
 
 //    @Synchronized
 //    fun insertMedicine(m: Medicine): Long {
@@ -157,7 +208,7 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
 //    }
 
     private object DbReferences {
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
         const val DATABASE_NAME = "my_database.db"
 
         const val TABLE_NAME = "logs"
@@ -181,5 +232,4 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
 
         const val DROP_TABLE_STATEMENT = "DROP TABLE IF EXISTS $TABLE_NAME"
     }
-
 }

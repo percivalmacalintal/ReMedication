@@ -1,33 +1,38 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
+import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import java.text.SimpleDateFormat
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.Executors
 
 class LogsDateGenerator {
     companion object{
-        fun generateData(): ArrayList<LogsDate> {
-            val calendar = Calendar.getInstance()
-            calendar.time = Date()
-            val formatter = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+        private val executorService = Executors.newSingleThreadExecutor()
 
-            val tempList = ArrayList<LogsDate>()
+        fun generateLogsDates(context: Context, dates: ArrayList<Date>, callback: (ArrayList<LogsDate>) -> Unit) {
+            executorService.execute {
+                val logsDates = ArrayList<LogsDate>()
+                val myLogDbHelper = LogDbHelper.getInstance(context)
+                val formatter = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
 
-            for (i in 1..5) {
-                val date = calendar.time
-                val formattedDate = formatter.format(date)
-                if (i == 1){
-                    tempList.add(LogsDate(formattedDate, LogsGenerator.generateNoData()))
+                for ((index, date) in dates.withIndex()){
+                    val formattedDate = formatter.format(date)
+                    val logList = myLogDbHelper?.getAllLogsDate(date) ?: emptyList()
+                    val logsDate = LogsDate(
+                        formattedDate,
+                        logList as ArrayList<Log>,
+                        index == 0
+                    )
+                    logsDates.add(logsDate)
                 }
-                else{
-                    tempList.add(LogsDate(formattedDate, LogsGenerator.generateData()))
+
+                Handler(Looper.getMainLooper()).post {
+                    callback(logsDates)
                 }
-
-
-                calendar.add(Calendar.DAY_OF_MONTH, -1)
             }
-            return tempList
         }
     }
 }
