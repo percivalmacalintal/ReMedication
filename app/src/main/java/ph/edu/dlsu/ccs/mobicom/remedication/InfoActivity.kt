@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.Intent
 import android.graphics.drawable.Drawable
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -16,6 +17,7 @@ import androidx.activity.ComponentActivity
 import androidx.core.widget.addTextChangedListener
 import ph.edu.dlsu.ccs.mobicom.remedication.databinding.ActivityInfoBinding
 import ph.edu.dlsu.ccs.mobicom.remedication.databinding.DialogTimeofdaySelectionBinding
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.GregorianCalendar
@@ -44,10 +46,10 @@ class InfoActivity : ComponentActivity() {
 
     private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var viewBinding: ActivityInfoBinding
-    private lateinit var myDbHelper: MyDbHelper
+    private lateinit var myDbHelper: MedicineDbHelper
 
     private var medicineId: Long = -1
-    private var initialImage: Int = -1
+    private var initialImage: String = ""
     private var initialName: String = ""
     private var initialDosage: String = ""
     private var initialUnit: String = ""
@@ -77,10 +79,10 @@ class InfoActivity : ComponentActivity() {
         viewBinding = ActivityInfoBinding.inflate(layoutInflater)
         setContentView(viewBinding.root)
 
-        myDbHelper = MyDbHelper.getInstance(this@InfoActivity)!!
+        myDbHelper = MedicineDbHelper.getInstance(this@InfoActivity)!!
 
         medicineId = this.intent.getLongExtra(ID_KEY, -1)
-        initialImage = this.intent.getIntExtra(IMAGE_KEY, 0)
+        initialImage = this.intent.getStringExtra(IMAGE_KEY) ?: ""
         initialName = this.intent.getStringExtra(NAME_KEY) ?: ""
         initialName = this.intent.getStringExtra(NAME_KEY) ?: ""
         initialDosage = this.intent.getIntExtra(DOSAGE_KEY, 0).toString()
@@ -95,7 +97,9 @@ class InfoActivity : ComponentActivity() {
         confirmedFrequency  = initialFrequency
         confirmedTimeOfDay = initialTimeOfDay.toMutableList()
 
-        viewBinding.medicineIv.setImageResource(initialImage)
+        val imageUri = Uri.fromFile(File(initialImage))
+        viewBinding.medicineIv.setImageURI(imageUri)  // Set the image using the Uri
+
         viewBinding.namevalEt.setText(initialName)
         viewBinding.dosvalEt.setText(initialDosage)
         viewBinding.remvalEt.setText(initialRemaining)
@@ -202,7 +206,7 @@ class InfoActivity : ComponentActivity() {
 
             builder.setPositiveButton("Yes") { _, _ ->
                 executorService.execute {
-                    val updatedImage = this.intent.getIntExtra(IMAGE_KEY, 0)   //change when editable
+                    val updatedImage = this.intent.getStringExtra(IMAGE_KEY) ?: ""   //change when editable
                     val medicine = Medicine(
                         updatedImage,
                         updatedName,

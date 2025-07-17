@@ -41,7 +41,7 @@ class NewMedicineActivity : ComponentActivity(){
 
     private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var viewBinding: ActivityNewMedicineBinding
-    private lateinit var myDbHelper: MyDbHelper
+    private lateinit var myDbHelper: MedicineDbHelper
 
     private var selectedTimeOfDay = mutableListOf<Int>()
     private var confirmedTimeOfDay = mutableListOf<Int>()
@@ -141,7 +141,7 @@ class NewMedicineActivity : ComponentActivity(){
 
             if (areFieldsComplete()) {
                 executorService.execute {
-                    myDbHelper = MyDbHelper.getInstance(this@NewMedicineActivity)!!
+                    myDbHelper = MedicineDbHelper.getInstance(this@NewMedicineActivity)!!
                     val medicine = Medicine(
                         image,
                         name,

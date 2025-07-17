@@ -21,7 +21,7 @@ class MedicineActivity : ComponentActivity() {
     private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var medicines : ArrayList<Medicine>
     private lateinit var medAdapter: MedicineAdapter
-    private lateinit var myDbHelper: MyDbHelper
+    private lateinit var myDbHelper: MedicineDbHelper
 
     private val infoResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
@@ -31,7 +31,7 @@ class MedicineActivity : ComponentActivity() {
             val index = medicines.indexOfFirst { it.id == id }
 
             if (index != -1) {
-                val updatedImage = result.data!!.getIntExtra(InfoActivity.IMAGE_KEY, 0)
+                val updatedImage = result.data!!.getStringExtra(InfoActivity.IMAGE_KEY) ?: ""
                 val updatedName = result.data!!.getStringExtra(InfoActivity.NAME_KEY) ?: ""
                 val updatedDosage = result.data!!.getIntExtra(InfoActivity.DOSAGE_KEY, 0)
                 val updatedUnit = result.data!!.getStringExtra(InfoActivity.UNIT_KEY) ?: ""
@@ -42,14 +42,6 @@ class MedicineActivity : ComponentActivity() {
                 val updatedEndDate = result.data!!.getStringExtra(InfoActivity.END_KEY) ?: ""
                 medicines[index] = Medicine(id, updatedImage, updatedName, updatedDosage, updatedUnit, updatedFrequency, updatedTimeOfDay, updatedRemaining, updatedStartDate, updatedEndDate)
                 medAdapter.notifyItemChanged(index)
-//                if (updatedName != null) {
-//                }
-//                else {
-//                    if (position != null) {
-//                        medicines.removeAt(position)
-//                        medAdapter.notifyItemRemoved(position)
-//                    }
-//                }
                 printMedicinesToLog()
             }
         } else if(result.resultCode == RESULT_DELETE){
@@ -65,7 +57,7 @@ class MedicineActivity : ComponentActivity() {
         ActivityResultContracts.StartActivityForResult()) { result: ActivityResult ->
         if (result.resultCode == RESULT_OK) {
             val id = result.data!!.getLongExtra(NewMedicineActivity.NEW_ID_KEY, -1)
-            val image = result.data!!.getIntExtra(NewMedicineActivity.NEW_IMAGE_KEY, 0)
+            val image = result.data!!.getStringExtra(NewMedicineActivity.NEW_IMAGE_KEY) ?: ""
             val name = result.data!!.getStringExtra(NewMedicineActivity.NEW_NAME_KEY) ?: ""
             val dosage = result.data!!.getIntExtra(NewMedicineActivity.NEW_DOSAGE_KEY, 0)
             val unit = result.data!!.getStringExtra(NewMedicineActivity.NEW_UNIT_KEY) ?: ""
@@ -87,7 +79,7 @@ class MedicineActivity : ComponentActivity() {
         setContentView(viewBinding.root)
 
         executorService.execute {
-            myDbHelper = MyDbHelper.getInstance(this@MedicineActivity)!!
+            myDbHelper = MedicineDbHelper.getInstance(this@MedicineActivity)!!
             medicines = myDbHelper.getAllMedicinesDefault()
 
             printMedicinesToLog()

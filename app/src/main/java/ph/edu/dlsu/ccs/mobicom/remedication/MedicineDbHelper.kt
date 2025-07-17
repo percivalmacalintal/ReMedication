@@ -6,16 +6,15 @@ import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
-class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DATABASE_NAME, null, DbReferences.DATABASE_VERSION) {
-
+class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DATABASE_NAME, null, DbReferences.DATABASE_VERSION) {
     // The singleton pattern design
     companion object {
-        private var instance: MyDbHelper? = null
+        private var instance: MedicineDbHelper? = null
 
         @Synchronized
-        fun getInstance(context: Context): MyDbHelper? {
+        fun getInstance(context: Context): MedicineDbHelper? {
             if (instance == null) {
-                instance = MyDbHelper(context.applicationContext)
+                instance = MedicineDbHelper(context.applicationContext)
             }
             return instance
         }
@@ -49,7 +48,7 @@ class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DAT
 
         while (cursor.moveToNext()) {
             val id = cursor.getLong(cursor.getColumnIndexOrThrow(DbReferences._ID))
-            val imageId = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_IMAGE_ID))
+            val imageUri = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_IMAGE_URI))
             val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
             val dosage = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
             val unit = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_UNIT))
@@ -66,7 +65,7 @@ class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DAT
 
             val medicine = Medicine(
                 id,
-                imageId,
+                imageUri,
                 name,
                 dosage,
                 unit,
@@ -92,7 +91,7 @@ class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DAT
 
         // Create a new map of values, where column names are the keys
         val values = ContentValues()
-        values.put(DbReferences.COLUMN_NAME_IMAGE_ID, m.imageId)
+        values.put(DbReferences.COLUMN_NAME_IMAGE_URI, m.imageUri)
         values.put(DbReferences.COLUMN_NAME_NAME, m.name)
         values.put(DbReferences.COLUMN_NAME_DOSAGE, m.dosage)
         values.put(DbReferences.COLUMN_NAME_UNIT, m.unit)
@@ -121,7 +120,7 @@ class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DAT
 
         // Create a new ContentValues object to hold the updated values
         val values = ContentValues()
-        values.put(DbReferences.COLUMN_NAME_IMAGE_ID, m.imageId)
+        values.put(DbReferences.COLUMN_NAME_IMAGE_URI, m.imageUri)
         values.put(DbReferences.COLUMN_NAME_NAME, m.name)
         values.put(DbReferences.COLUMN_NAME_DOSAGE, m.dosage)
         values.put(DbReferences.COLUMN_NAME_UNIT, m.unit)
@@ -169,7 +168,7 @@ class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DAT
 
         const val TABLE_NAME = "medicines"
         const val _ID = "id"
-        const val COLUMN_NAME_IMAGE_ID = "image_id"
+        const val COLUMN_NAME_IMAGE_URI = "image_id"
         const val COLUMN_NAME_NAME = "name"
         const val COLUMN_NAME_DOSAGE = "dosage"
         const val COLUMN_NAME_UNIT = "unit"
@@ -182,7 +181,7 @@ class MyDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DAT
         const val CREATE_TABLE_STATEMENT =
             "CREATE TABLE IF NOT EXISTS $TABLE_NAME (" +
                     "$_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    "$COLUMN_NAME_IMAGE_ID INTEGER, " +
+                    "$COLUMN_NAME_IMAGE_URI TEXT, " +
                     "$COLUMN_NAME_NAME TEXT, " +
                     "$COLUMN_NAME_DOSAGE INTEGER, " +
                     "$COLUMN_NAME_UNIT TEXT, " +
