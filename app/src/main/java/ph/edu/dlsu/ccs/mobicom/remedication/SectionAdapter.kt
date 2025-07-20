@@ -3,19 +3,31 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Date
 import java.util.TimeZone
+import java.util.concurrent.Executors
 
 class SectionAdapter(private val sections: List<Section>) :
     RecyclerView.Adapter<SectionViewHolder>() {
 
-    init {
-        updateSectionBasedOnTime(sections)
-        markOverdueItems()
-    }
+    private val executorService = Executors.newSingleThreadExecutor()
+    private lateinit var myDbHelper: LogDbHelper
+
+//    init {
+//        updateSectionBasedOnTime(sections)
+//        markOverdueItems()
+//    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SectionViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.section_layout, parent, false)
+
+        myDbHelper = LogDbHelper.getInstance(parent.context)!!
+
+        updateSectionBasedOnTime(sections)
+        markOverdueItems()
+
         return SectionViewHolder(view)  // Using SectionViewHolder from the other file
     }
 
@@ -57,9 +69,9 @@ class SectionAdapter(private val sections: List<Section>) :
         }
     }
 
-    private fun markOverdueItems() {
+    private fun markOverdueItems() {     //Add here for missed
         val periodRank = mapOf(
-            "Early Morning" to 0,
+            "Early Morning"  to 0,
             "Morning"        to 1,
             "Afternoon"      to 2,
             "Night"          to 3
@@ -73,12 +85,33 @@ class SectionAdapter(private val sections: List<Section>) :
             else      -> 3
         }
 
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()) // Date format (year-month-day)
+        val timeFormat = SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()) // Time format (hours:minutes:seconds)
+
         for (section in sections) {
             val sectionRank = periodRank[section.label] ?: continue
             val isInPast = sectionRank < currentPeriod
 
             for (item in section.checklist) {
                 item.isOverdue = isInPast && !item.isChecked
+                if (item.isOverdue){
+                    executorService.execute {
+                        val currentDate = Date()
+                        val formattedDate = dateFormat.format(currentDate)
+                        val formattedTime = timeFormat.format(currentDate)
+
+                        val log = Log(
+                            formattedDate,   //now
+                            formattedTime,   //this time
+                            item.medicineName,
+                            item.dosage,
+                            true
+                        )
+                        val newId = myDbHelper.insertLog(log)
+
+                        android.util.Log.d("SectionAdapter", "new Log Overdue: ${newId}")
+                    }
+                }
             }
         }
     }

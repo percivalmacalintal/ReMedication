@@ -7,6 +7,8 @@ class Checklist (image: String, medicineName: String, dosage: String) {
         private set
     var dosage = dosage
         private set
+    var logID: Long = -1
     var isChecked = false
     var isOverdue = false
+    var isLogCreated = false
 }

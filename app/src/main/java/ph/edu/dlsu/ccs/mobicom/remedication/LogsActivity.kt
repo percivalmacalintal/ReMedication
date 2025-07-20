@@ -14,12 +14,13 @@ import java.util.Calendar
 import java.util.concurrent.Executors
 import java.util.Date
 
-
 class LogsActivity : ComponentActivity() {
     private val executorService = Executors.newSingleThreadExecutor()
-    private lateinit var LogsDateList : ArrayList<LogsDate>
-    private lateinit var MedicineList : ArrayList<Medicine>
+    private lateinit var logsDateList : ArrayList<LogsDate>
+    private lateinit var medicineList : ArrayList<Medicine>
+    private lateinit var logsList : ArrayList<Log>
     private lateinit var myMedicineDbHelper: MedicineDbHelper
+    private lateinit var myDbHelper: LogDbHelper
     private lateinit var dates: ArrayList<Date>
 
     private lateinit var monthSp: Spinner
@@ -44,9 +45,11 @@ class LogsActivity : ComponentActivity() {
         this.recyclerView = findViewById(R.id.logsRv)
 
         LogsDateGenerator.generateLogsDates(this, dates) { logsDates ->
-            LogsDateList = logsDates
+            logsDateList = logsDates
 
-            this.recyclerView.adapter = LogsDateAdapter(this.LogsDateList)
+            printLogsToLog()
+
+            this.recyclerView.adapter = LogsDateAdapter(this.logsDateList)
 
             this.recyclerView.layoutManager = LinearLayoutManager(this)
         }
@@ -83,9 +86,9 @@ class LogsActivity : ComponentActivity() {
         //  medicine
         executorService.execute {
             myMedicineDbHelper = MedicineDbHelper.getInstance(this@LogsActivity)!!
-            MedicineList = myMedicineDbHelper.getAllMedicinesDefault()
+            medicineList = myMedicineDbHelper.getAllMedicinesDefault()
             val medicines = mutableListOf("Medicine Name")
-            for (medicine in MedicineList) {
+            for (medicine in medicineList) {
                 medicines.add(medicine.name)
             }
             val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
@@ -173,6 +176,15 @@ class LogsActivity : ComponentActivity() {
             4, 6, 9, 11 -> 30
             2 -> if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) 29 else 28
             else -> 31
+        }
+    }
+
+    private fun printLogsToLog() {
+        for (ld in logsDateList) {
+            android.util.Log.d("LogsActivity", "printLogDate: ${ld.logs}")
+            for(log in ld.logs){
+                android.util.Log.d("LogsActivity", "printAllLogs: ${log.name}")
+            }
         }
     }
 }

@@ -8,25 +8,22 @@ class Log{
     var date: Date = Date()
     var time: String = ""
     var name: String = ""
-    var amount: Int = 0
     var dosage: String = ""
     var isMissed: Boolean = true
 
-    constructor(date: String, time: String, name: String, amount: Int, dosage: String, isMissed: Boolean) {
+    constructor(date: String, time: String, name: String, dosage: String, isMissed: Boolean) {
         this.date = parseDate(date)
         this.time = time
         this.name = name
-        this.amount = amount
         this.dosage = dosage
         this.isMissed = isMissed
     }
 
-    constructor(id: Long, date: String, time: String, name: String, amount: Int, dosage: String, isMissed: Boolean) {
+    constructor(id: Long, date: String, time: String, name: String, dosage: String, isMissed: Boolean) {
         this.id = id
         this.date = parseDate(date)
         this.time = time
         this.name = name
-        this.amount = amount
         this.dosage = dosage
         this.isMissed = isMissed
     }
@@ -40,7 +37,7 @@ class Log{
     }
 
     private fun parseDate(dateString: String): Date {
-        val dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return try {
             dateFormat.parse(dateString) ?: Date()
         } catch (e: Exception) {
@@ -49,7 +46,7 @@ class Log{
     }
 
     fun getFormattedDate(): String {
-        val dateFormat = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         return dateFormat.format(date)
     }
 }

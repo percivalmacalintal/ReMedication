@@ -56,7 +56,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
             val date = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DATE))
             val time = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_TIME))
             val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
-            val amount = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_AMOUNT))
             val dosage = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
             val isMissed = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_ISMISSED)) == 1 // Convert 1 to true and 0 to false
 
@@ -66,7 +65,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
                 date,
                 time,
                 name,
-                amount,
                 dosage,
                 isMissed
             )
@@ -75,7 +73,7 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
         }
 
         cursor.close()
-        database.close()
+//        database.close()
 
         return logs
     }
@@ -106,7 +104,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
             val date = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DATE))
             val time = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_TIME))
             val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
-            val amount = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_AMOUNT))
             val dosage = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
             val isMissed = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_ISMISSED)) == 1 // Convert 1 to true and 0 to false
 
@@ -116,7 +113,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
                 date,
                 time,
                 name,
-                amount,
                 dosage,
                 isMissed
             )
@@ -125,98 +121,55 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
         }
 
         cursor.close()
-        database.close()
+//        database.close()
 
         return logs
     }
 
-//    @Synchronized
-//    fun insertMedicine(m: Medicine): Long {
-//        val database = this.writableDatabase
-//
-//        // Create a new map of values, where column names are the keys
-//        val values = ContentValues()
-//        values.put(DbReferences.COLUMN_NAME_IMAGE_ID, m.imageId)
-//        values.put(DbReferences.COLUMN_NAME_NAME, m.name)
-//        values.put(DbReferences.COLUMN_NAME_DOSAGE, m.dosage)
-//        values.put(DbReferences.COLUMN_NAME_UNIT, m.unit)
-//        values.put(DbReferences.COLUMN_NAME_FREQUENCY, m.frequency)
-//
-//        // Convert the List<Int> timeOfDay to a comma-separated string
-//        val timeOfDayString = m.timeOfDay.joinToString(",")
-//        values.put(DbReferences.COLUMN_NAME_TIME_OF_DAY, timeOfDayString)
-//
-//        values.put(DbReferences.COLUMN_NAME_REMAINING, m.remaining)
-//        values.put(DbReferences.COLUMN_NAME_START, m.getFormattedStartDate())
-//        values.put(DbReferences.COLUMN_NAME_END, m.getFormattedEndDate())
-//
-//        // Insert the new row into the database
-//        val id = database.insert(DbReferences.TABLE_NAME, null, values)
-//
-//        // Close the database
+    @Synchronized
+    fun insertLog(log: Log): Long {
+        val database = this.writableDatabase
+
+        // Create a new map of values, where column names are the keys
+        val values = ContentValues()
+        values.put(DbReferences.COLUMN_NAME_DATE, log.getFormattedDate())  // Store the log date
+        values.put(DbReferences.COLUMN_NAME_TIME, log.time)  // Store the time of the log
+        values.put(DbReferences.COLUMN_NAME_NAME, log.name)  // Store the name of the medication or action
+        values.put(DbReferences.COLUMN_NAME_DOSAGE, log.dosage)  // Store the dosage
+        values.put(DbReferences.COLUMN_NAME_ISMISSED, if (log.isMissed) 1 else 0)  // Store the missed status (1 for true, 0 for false)
+
+        // Insert the new log row into the database
+        val id = database.insert(DbReferences.TABLE_NAME, null, values)
+
+        // Close the database
 //        database.close()
-//
-//        return id
-//    }
-//
-//    @Synchronized
-//    fun updateMedicine(m: Medicine, id: Long): Int {
-//        val database = this.writableDatabase
-//
-//        // Create a new ContentValues object to hold the updated values
-//        val values = ContentValues()
-//        values.put(DbReferences.COLUMN_NAME_IMAGE_ID, m.imageId)
-//        values.put(DbReferences.COLUMN_NAME_NAME, m.name)
-//        values.put(DbReferences.COLUMN_NAME_DOSAGE, m.dosage)
-//        values.put(DbReferences.COLUMN_NAME_UNIT, m.unit)
-//        values.put(DbReferences.COLUMN_NAME_FREQUENCY, m.frequency)
-//
-//        // Convert timeOfDay list to a comma-separated string
-//        val timeOfDayString = m.timeOfDay.joinToString(",")
-//        values.put(DbReferences.COLUMN_NAME_TIME_OF_DAY, timeOfDayString)
-//
-//        values.put(DbReferences.COLUMN_NAME_REMAINING, m.remaining)
-//        values.put(DbReferences.COLUMN_NAME_START, m.getFormattedStartDate())
-//        values.put(DbReferences.COLUMN_NAME_END, m.getFormattedEndDate())
-//
-//        // Perform the update operation
-//        val rowsAffected = database.update(
-//            DbReferences.TABLE_NAME,
-//            values,
-//            "${DbReferences._ID} = ?", // Update the row with the specified ID
-//            arrayOf(id.toString())
-//        )
-//
-//        // Close the database connection
-//        database.close()
-//
-//        return rowsAffected // Return the number of rows affected by the update
-//    }
-//
-//    @Synchronized
-//    fun deleteMedicine(id: Long): Int {
-//        val database = this.writableDatabase
-//
-//        val rowsDeleted = database.delete(
-//            DbReferences.TABLE_NAME,
-//            "${DbReferences._ID} = ?",
-//            arrayOf(id.toString())
-//        )
-//
-//        database.close()
-//        return rowsDeleted
-//    }
+
+        return id  // Return the ID of the newly inserted log
+    }
+
+    @Synchronized
+    fun deleteLog(id: Long): Int {
+        val database = this.writableDatabase
+
+        val rowsDeleted = database.delete(
+            DbReferences.TABLE_NAME,
+            "${DbReferences._ID} = ?",
+            arrayOf(id.toString())
+        )
+
+        database.close()
+        return rowsDeleted
+    }
 
     private object DbReferences {
-        const val DATABASE_VERSION = 2
-        const val DATABASE_NAME = "my_database.db"
+        const val DATABASE_VERSION = 1
+        const val DATABASE_NAME = "logs.db"
 
         const val TABLE_NAME = "logs"
         const val _ID = "id"
         const val COLUMN_NAME_DATE = "date"
         const val COLUMN_NAME_TIME = "time"
         const val COLUMN_NAME_NAME = "name"
-        const val COLUMN_NAME_AMOUNT = "amount"
         const val COLUMN_NAME_DOSAGE = "dosage"
         const val COLUMN_NAME_ISMISSED = "isMissed"
 
@@ -226,7 +179,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
                     "$COLUMN_NAME_DATE TEXT, " +
                     "$COLUMN_NAME_TIME TEXT, " +
                     "$COLUMN_NAME_NAME TEXT, " +
-                    "$COLUMN_NAME_AMOUNT INT, " +
                     "$COLUMN_NAME_DOSAGE TEXT, " +
                     "$COLUMN_NAME_ISMISSED INT)"    //Boolean
 

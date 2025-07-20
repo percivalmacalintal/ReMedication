@@ -72,7 +72,6 @@ class MedicineActivity : ComponentActivity() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val viewBinding = ActivityMedicineBinding.inflate(layoutInflater)
