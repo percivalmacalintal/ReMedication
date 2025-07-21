@@ -26,7 +26,6 @@ import java.util.GregorianCalendar
 import java.util.Locale
 import java.util.concurrent.Executors
 
-
 class InfoActivity : ComponentActivity() {
     companion object {
         const val ID_KEY = "ID_KEY"
@@ -41,7 +40,6 @@ class InfoActivity : ComponentActivity() {
         const val END_KEY = "END_KEY"
         const val POSITION_KEY = "POSITION_KEY"
 
-        //Results
         const val RESULT_EDIT = 200
         const val RESULT_DELETE = 300
     }
@@ -60,7 +58,6 @@ class InfoActivity : ComponentActivity() {
     private var initialRemaining: String = ""
     private var initialStartDate: String = ""
     private var initialEndDate: String = ""
-//    private var initialPosition: Int = -1
 
     private var isEditing = false
     private var defaultEditTextBackground: Drawable? = null
@@ -115,7 +112,6 @@ class InfoActivity : ComponentActivity() {
         initialRemaining = this.intent.getIntExtra(REMAINING_KEY, 0).toString()
         initialStartDate = this.intent.getStringExtra(START_KEY) ?: ""
         initialEndDate = this.intent.getStringExtra(END_KEY) ?: ""
-//        initialPosition = this.intent.getIntExtra(POSITION_KEY, -1)
 
         confirmedFrequency  = initialFrequency
         confirmedTimeOfDay = initialTimeOfDay.toMutableList()
@@ -215,14 +211,9 @@ class InfoActivity : ComponentActivity() {
             val updatedFrequency = viewBinding.freqvalSp.selectedItem.toString()
 
             if (updatedName.isEmpty() || updatedDosage.isEmpty() || updatedRemaining.isEmpty() ||
-                updatedStartDate.isEmpty() || updatedEndDate.isEmpty()) {
+                updatedStartDate.isEmpty() || updatedEndDate.isEmpty() || updatedFrequency == "Select frequency...") {
 
                 Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (confirmedTimeOfDay.isEmpty()) {
-                Toast.makeText(this, "Please choose time(s) of day", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -270,14 +261,10 @@ class InfoActivity : ComponentActivity() {
                     returnIntent.putExtra(DOSAGE_KEY, updatedDosage.toInt())
                     returnIntent.putExtra(UNIT_KEY, updatedUnit)
                     returnIntent.putExtra(FREQUENCY_KEY, updatedFrequency)
-                    returnIntent.putIntegerArrayListExtra(
-                        TIMEOFDAY_KEY,
-                        ArrayList(confirmedTimeOfDay)
-                    )
+                    returnIntent.putIntegerArrayListExtra(TIMEOFDAY_KEY, ArrayList(confirmedTimeOfDay))
                     returnIntent.putExtra(REMAINING_KEY, updatedRemaining.toInt())
                     returnIntent.putExtra(START_KEY, updatedStartDate)
                     returnIntent.putExtra(END_KEY, updatedEndDate)
-                    //                    returnIntent.putExtra(POSITION_KEY, initialPosition)
                     setResult(RESULT_EDIT, returnIntent)
                     finish()
                 }
@@ -442,6 +429,13 @@ class InfoActivity : ComponentActivity() {
             if (morningCb.isChecked) selectedTimeOfDay.add(1)
             if (afternoonCb.isChecked) selectedTimeOfDay.add(2)
             if (nightCb.isChecked) selectedTimeOfDay.add(3)
+
+            if (selectedTimeOfDay.size != maxSelection) {
+                Toast.makeText(this, "You must select $maxSelection times a day.", Toast.LENGTH_SHORT).show()
+                onCancel()
+                return@setPositiveButton
+            }
+
             confirmedFrequency  = frequencyLabel
             confirmedTimeOfDay  = selectedTimeOfDay.toMutableList()
             if (isEditing) {

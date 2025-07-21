@@ -136,11 +136,6 @@ class NewMedicineActivity : ComponentActivity(){
             confirmedPhotoFile.delete()
             val image = medicinePhotoFile.absolutePath
 
-            if (confirmedTimeOfDay.isEmpty()) {
-                Toast.makeText(this, "Please choose time(s) of day", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
             if (isEndDateEarlierThanStartDate(startDate, endDate)) {
                 Toast.makeText(this, "End date cannot be earlier than Start date", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -300,6 +295,13 @@ class NewMedicineActivity : ComponentActivity(){
             if (morningCb.isChecked) selectedTimeOfDay.add(1)
             if (afternoonCb.isChecked) selectedTimeOfDay.add(2)
             if (nightCb.isChecked) selectedTimeOfDay.add(3)
+
+            if (selectedTimeOfDay.size != maxSelection) {
+                Toast.makeText(this, "You must select $maxSelection times a day.", Toast.LENGTH_SHORT).show()
+                onCancel()
+                return@setPositiveButton
+            }
+
             confirmedFrequency = frequencyLabel
             confirmedTimeOfDay = selectedTimeOfDay.toMutableList()
             viewBinding.freqvalTv.text = formatTimeOfDayOnly(selectedTimeOfDay)
