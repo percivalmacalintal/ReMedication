@@ -1,7 +1,9 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
 import android.app.Activity.RESULT_OK
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.drawable.GradientDrawable
 import android.view.View
 import android.widget.CheckBox
@@ -36,6 +38,7 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
     private val mtv: TextView = itemView.findViewById(R.id.medicineNameTv)
     private val dtv: TextView = itemView.findViewById(R.id.dosageTv)
     private val cb: CheckBox = itemView.findViewById(R.id.checklistCb)
+    private val sharedPreferences: SharedPreferences = itemView.context.getSharedPreferences("ReminderPrefs", Context.MODE_PRIVATE)
 
     // This is our own method that accepts a Character object and sets our views' info accordingly.
     fun bindData(checklist: Checklist, position: Int, adapter: ChecklistAdapter) {
@@ -45,6 +48,9 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
 
         mtv.text = checklist.medicineName
         dtv.text = checklist.dosage
+
+        val savedIsChecked = sharedPreferences.getBoolean("checklist_${checklist.medicineName}_checked", false)
+        checklist.isChecked = savedIsChecked
         cb.isChecked = checklist.isChecked
 
         val bgColor = when {
@@ -70,6 +76,10 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
 
         cb.setOnClickListener {
             checklist.isChecked = !checklist.isChecked
+
+            val editor = sharedPreferences.edit()
+            editor.putBoolean("checklist_${checklist.medicineName}_checked", checklist.isChecked)
+            editor.apply()
 
             if (checklist.isChecked && !checklist.isLogCreated && !checklist.isOverdue){   //idk if cb is disabled when overdue
                 executorService.execute {   //  add new log when checked
