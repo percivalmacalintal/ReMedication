@@ -50,13 +50,13 @@ class SectionAdapter(private val sections: List<Section>) :
 
     override fun getItemCount(): Int = sections.size
 
-    fun getPhilippineTime(): Calendar {
-        val calendar = Calendar.getInstance(TimeZone.getTimeZone("Asia/Manila"))
+    fun getLocalTime(): Calendar {
+        val calendar = Calendar.getInstance()
         return calendar
     }
 
     fun updateSectionBasedOnTime(sections: List<Section>) {
-        val currentHour = getPhilippineTime().get(Calendar.HOUR_OF_DAY)
+        val currentHour = getLocalTime().get(Calendar.HOUR_OF_DAY)
 
         for (section in sections) {
             section.isExpanded = when (section.label) {
@@ -77,7 +77,7 @@ class SectionAdapter(private val sections: List<Section>) :
             "Night"          to 3
         )
 
-        val currentHour = getPhilippineTime().get(Calendar.HOUR_OF_DAY)
+        val currentHour = getLocalTime().get(Calendar.HOUR_OF_DAY)
         val currentPeriod = when (currentHour) {
             in 0..5   -> 0
             in 6..11  -> 1
