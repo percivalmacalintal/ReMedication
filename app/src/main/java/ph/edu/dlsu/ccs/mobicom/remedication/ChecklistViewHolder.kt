@@ -49,7 +49,7 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
         mtv.text = checklist.medicineName
         dtv.text = checklist.dosage
 
-        val savedIsChecked = sharedPreferences.getBoolean("checklist_${checklist.medicineName}_checked", false)
+        val savedIsChecked = sharedPreferences.getBoolean("checklist_${checklist.medicineName}_${checklist.timeOfDay}_checked", false)
         checklist.isChecked = savedIsChecked
         cb.isChecked = checklist.isChecked
 
@@ -78,7 +78,7 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
             checklist.isChecked = !checklist.isChecked
 
             val editor = sharedPreferences.edit()
-            editor.putBoolean("checklist_${checklist.medicineName}_checked", checklist.isChecked)
+            editor.putBoolean("checklist_${checklist.medicineName}_${checklist.timeOfDay}_checked", checklist.isChecked)
             editor.apply()
 
             if (checklist.isChecked && !checklist.isLogCreated && !checklist.isOverdue){   //idk if cb is disabled when overdue
