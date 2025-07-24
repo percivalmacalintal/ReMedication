@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Button
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -18,9 +20,7 @@ class LogsActivity : ComponentActivity() {
     private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var logsDateList : ArrayList<LogsDate>
     private lateinit var medicineList : ArrayList<Medicine>
-    private lateinit var logsList : ArrayList<Log>
     private lateinit var myMedicineDbHelper: MedicineDbHelper
-    private lateinit var myDbHelper: LogDbHelper
     private lateinit var dates: ArrayList<Date>
 
     private lateinit var monthSp: Spinner
@@ -28,12 +28,23 @@ class LogsActivity : ComponentActivity() {
     private lateinit var yearSp: Spinner
     private lateinit var medicineSp: Spinner
 
+    private lateinit var searchBtn: Button
+
     private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logs)
 
+        this.recyclerView = findViewById(R.id.logsRv)
+        this.searchBtn = findViewById(R.id.searchBtn)
+        //  spinners
+        this.monthSp = findViewById(R.id.monthSp)
+        this.daySp = findViewById(R.id.daySp)
+        this.yearSp = findViewById(R.id.yearSp)
+        this.medicineSp = findViewById(R.id.medicineSp)
+
+        //  Set up Logs
         dates = ArrayList()
         val calendar = Calendar.getInstance()
         for (i in 0..4) {
@@ -41,8 +52,6 @@ class LogsActivity : ComponentActivity() {
             calendar.add(Calendar.DAY_OF_YEAR, -i) // Subtract i days from the current date
             dates.add(calendar.time) // Add the date to the list
         }
-
-        this.recyclerView = findViewById(R.id.logsRv)
 
         LogsDateGenerator.generateLogsDates(this, dates) { logsDates ->
             logsDateList = logsDates
@@ -54,12 +63,7 @@ class LogsActivity : ComponentActivity() {
             this.recyclerView.layoutManager = LinearLayoutManager(this)
         }
 
-        //  set up spinners
-        this.monthSp = findViewById(R.id.monthSp)
-        this.daySp = findViewById(R.id.daySp)
-        this.yearSp = findViewById(R.id.yearSp)
-        this.medicineSp = findViewById(R.id.medicineSp)
-
+        //  Set up spinners
         val months = listOf("Month", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
         val monthAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, months)
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
@@ -139,6 +143,39 @@ class LogsActivity : ComponentActivity() {
                 else -> false
             }
         }
+
+        searchBtn.setOnClickListener {
+            val selectedYear = yearSp.selectedItem.toString()
+            val selectedMonth = monthSp.selectedItem.toString()
+            val selectedDay = daySp.selectedItem.toString()
+            val selectedMedicine = medicineSp.selectedItem.toString()
+
+            // Check if the any spinner was used
+            if (selectedYear == "Year" && selectedMonth == "Month" && selectedDay == "Day" &&
+                selectedMedicine == "Medicine Name") {
+                Toast.makeText(this, "Please select at least one filter", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Fetch filtered logs from the database based on the spinner selections
+            executorService.execute {
+                //  Set up filter values
+                val queryYear = if (selectedYear == "Year") "%" else selectedYear
+                val queryMonth = if (selectedMonth == "Month") "%" else monthNameToNumber(selectedMonth)
+                val queryDay = if (selectedDay == "Day") "%" else selectedDay
+                val queryMedicine = if (selectedMedicine == "Medicine Name") "%" else selectedMedicine
+                // Fetch data from the database based on filters
+                LogsDateGenerator.generateSearchLogsDates(this, queryYear, queryMonth, queryDay, queryMedicine) { logsDates ->
+                    logsDateList = logsDates
+
+                    printLogsToLog()
+
+                    this.recyclerView.adapter = LogsDateAdapter(this.logsDateList)
+
+                    this.recyclerView.layoutManager = LinearLayoutManager(this)
+                }
+            }
+        }
     }
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -146,7 +183,7 @@ class LogsActivity : ComponentActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.logsIt
     }
-
+    // change updateDaySpinner to only reset if the currently selected day would not be valid in that month/year
     private fun updateDaySpinner() {
         val selectedMonth = if (monthSp.selectedItemPosition == 0) {
             1
@@ -169,7 +206,6 @@ class LogsActivity : ComponentActivity() {
         daySp.adapter = dayAdapter
     }
 
-    // Get the max days in a month, accounting for leap years
     private fun getMaxDaysInMonth(month: Int, year: Int): Int {
         return when (month) {
             1, 3, 5, 7, 8, 10, 12 -> 31
@@ -177,6 +213,27 @@ class LogsActivity : ComponentActivity() {
             2 -> if ((year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)) 29 else 28
             else -> 31
         }
+    }
+
+    private fun monthNameToNumber(monthName: String): String {
+        // A map of month names to their corresponding numbers (01 to 12)
+        val monthMap = mapOf(
+            "January" to "01",
+            "February" to "02",
+            "March" to "03",
+            "April" to "04",
+            "May" to "05",
+            "June" to "06",
+            "July" to "07",
+            "August" to "08",
+            "September" to "09",
+            "October" to "10",
+            "November" to "11",
+            "December" to "12"
+        )
+
+        // Return the corresponding month number or an empty string if the month name is invalid
+        return monthMap[monthName] ?: ""
     }
 
     private fun printLogsToLog() {

@@ -126,6 +126,58 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
         return logs
     }
 
+    fun getAllLogsSearch(year: String, month: String, day: String, medicine: String): ArrayList<Log> {
+        val database: SQLiteDatabase = this.readableDatabase
+
+        val dateArg =  if(month == "%" && day == "%") "$year-%" else "$year-$month-$day"
+
+        android.util.Log.d("LogDbHelper", "dateArg: $dateArg")
+        // Format the date parameter to match the date format in the database (e.g., YYYY-MM-DD)
+//        val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
+
+        // Query rows from the logs table where the date matches the specified date
+        val cursor: Cursor = database.query(
+            DbReferences.TABLE_NAME, // Table name
+            null, // All columns
+            DbReferences.COLUMN_NAME_DATE + " LIKE ? AND " + DbReferences.COLUMN_NAME_NAME + " LIKE ?",
+            arrayOf(dateArg, medicine),
+            null, // No group by
+            null, // No having
+            DbReferences.COLUMN_NAME_DATE + " DESC", // Order by date in descending order
+            null // No limit
+        )
+
+        val logs = ArrayList<Log>()
+
+        // Iterate through all the rows in the cursor
+        while (cursor.moveToNext()) {
+            val id = cursor.getLong(cursor.getColumnIndexOrThrow(DbReferences._ID))
+            val date = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DATE))
+            val time = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_TIME))
+            val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
+            val dosage = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
+            val isMissed = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_ISMISSED)) == 1 // Convert 1 to true and 0 to false
+
+            // Create a Log object and add it to the list
+            val log = Log(
+                id,
+                date,
+                time,
+                name,
+                dosage,
+                isMissed
+            )
+
+            logs.add(log)
+        }
+
+        cursor.close()
+//        database.close()
+
+        return logs
+    }
+
+
     @Synchronized
     fun insertLog(log: Log): Long {
         val database = this.writableDatabase
