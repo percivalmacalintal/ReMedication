@@ -27,6 +27,7 @@ import ph.edu.dlsu.ccs.mobicom.remedication.databinding.ActivityNewMedicineBindi
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.concurrent.Executors
+import kotlin.math.log
 
 class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
     // In our item layout, we need two references -- an ImageView and a TextView. Please note that
@@ -81,7 +82,9 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
             editor.putBoolean("checklist_${checklist.medicineName}_${checklist.timeOfDay}_checked", checklist.isChecked)
             editor.apply()
 
-            if (checklist.isChecked && !checklist.isLogCreated && !checklist.isOverdue){   //idk if cb is disabled when overdue
+            val isLogCreated = getIsLogCreated(checklist.id, itemView.context)
+
+            if (checklist.isChecked && !isLogCreated && !checklist.isOverdue){
                 executorService.execute {   //  add new log when checked
                     val currentDate = Date()
                     val formattedDate = dateFormat.format(currentDate)
@@ -94,22 +97,47 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
                         false
                     )
                     val newId = myDbHelper.insertLog(log)
-                    checklist.isLogCreated = true
-                    checklist.logID = newId
+                    saveNewLog(checklist.id, newId, true, itemView.context)
                     android.util.Log.d("ChecklistViewHolder", "new Log Taken: $newId")
                 }
-            } else if (!checklist.isChecked && checklist.isLogCreated && !checklist.isOverdue){
+            } else if (!checklist.isChecked && isLogCreated && !checklist.isOverdue){
                 executorService.execute {   //  delete log if unchecked
-                    if (checklist.logID != -1L) {
-                        android.util.Log.d("ChecklistViewHolder", "Deleting Log with ID: ${checklist.logID}")
-                        myDbHelper.deleteLog(checklist.logID)
-                        checklist.isLogCreated = false
-                        checklist.logID = -1L
-                        android.util.Log.d("ChecklistViewHolder", "Log Deleted: ${checklist.logID}")
+                    val logId = getLogId(checklist.id, itemView.context)
+                    if (logId != -1L) {
+                        android.util.Log.d("ChecklistViewHolder", "Deleting Log with ID: $logId")
+                        myDbHelper.deleteLog(logId)
+                        deleteLog(checklist.id, itemView.context)
+                        android.util.Log.d("ChecklistViewHolder", "Log Deleted: $logId")
                     }
                 }
             }
             adapter.notifyItemChanged(position)
         }
+    }
+
+    fun saveNewLog(itemId: Long, logId: Long, isCreated: Boolean, context: Context) {
+        val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.putLong("logId_$itemId", logId)
+        editor.putBoolean("isLogCreated_$itemId", isCreated)
+        editor.apply()
+    }
+
+    fun deleteLog(itemId: Long, context: Context) {
+        val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
+        val editor = sharedPref.edit()
+        editor.remove("logId_$itemId")
+        editor.remove("isLogCreated_$itemId")
+        editor.apply()
+    }
+
+    fun getIsLogCreated(itemId: Long, context: Context): Boolean {
+        val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
+        return sharedPref.getBoolean("isLogCreated_$itemId", false) == true   // Default is false if not found
+    }
+
+    fun getLogId(itemId: Long, context: Context): Long {
+        val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
+        return sharedPref.getLong("logId_$itemId", -1L)
     }
 }

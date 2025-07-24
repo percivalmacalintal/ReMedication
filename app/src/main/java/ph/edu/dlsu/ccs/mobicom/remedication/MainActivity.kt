@@ -5,6 +5,8 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.TextView
 import androidx.activity.ComponentActivity
@@ -38,13 +40,16 @@ class MainActivity : ComponentActivity() {
         }
 
         SectionDataGenerator.generateData(this) { sections ->
-            sectionList = sections
+            Handler(Looper.getMainLooper()).post {
+                sectionList = sections
 
-            this.recyclerView.adapter = SectionAdapter(this.sectionList)
+                val adapter = SectionAdapter(sectionList)
 
-            showOrHideEmptyMessage(SectionAdapter(this.sectionList))
+                recyclerView.adapter = adapter
+                recyclerView.layoutManager = LinearLayoutManager(this)
 
-            this.recyclerView.layoutManager = LinearLayoutManager(this)
+                showOrHideEmptyMessage(adapter)
+            }
         }
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)

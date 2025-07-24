@@ -3,6 +3,7 @@ package ph.edu.dlsu.ccs.mobicom.remedication
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -25,7 +26,13 @@ class SectionDataGenerator {
 
                     if (filteredMedicines.isNotEmpty()) {
                         val checklistItems = filteredMedicines.map {
-                            Checklist(it.imageId, it.name, "${it.dosage} ${it.unit}", i)
+                            Checklist(
+                                generateItemId(i, it.name),
+                                it.imageId,
+                                it.name,
+                                "${it.dosage} ${it.unit}",
+                                i
+                            )
                         }
                         sections.add(Section(sectionTitles[i], ArrayList(checklistItems)))
                     }
@@ -36,6 +43,11 @@ class SectionDataGenerator {
                     callback(sections)
                 }
             }
+        }
+
+        fun generateItemId(section: Int, medicineName: String): Long {
+            val uuid = UUID.nameUUIDFromBytes("$section-$medicineName".toByteArray())
+            return uuid.mostSignificantBits
         }
     }
 }

@@ -12,18 +12,21 @@ class LogsDateGenerator {
     companion object{
         private val executorService = Executors.newSingleThreadExecutor()
 
-        fun generateLogsDates(context: Context, dates: ArrayList<Date>, callback: (ArrayList<LogsDate>) -> Unit) {
+        fun generateLogsDates(context: Context, callback: (ArrayList<LogsDate>) -> Unit) {
             executorService.execute {
                 val logsDates = ArrayList<LogsDate>()
                 val myLogDbHelper = LogDbHelper.getInstance(context)
                 val formatter = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
 
-                for ((index, date) in dates.withIndex()){
-                    val formattedDate = formatter.format(date)
-                    val logList = myLogDbHelper?.getAllLogsDate(date) ?: emptyList()
+                val logList = myLogDbHelper?.getAllLogsDefault() ?: emptyList()
+
+                val uniqueDates = logList.map { it.date }.toSet()
+                for ((index, uniqueDate) in uniqueDates.withIndex()) {
+                    val formattedDate = formatter.format(uniqueDate)
+                    val logsForThisDate = logList.filter { it.date == uniqueDate }
                     val logsDate = LogsDate(
                         formattedDate,
-                        logList as ArrayList<Log>,
+                        logsForThisDate as ArrayList<Log>,
                         index == 0
                     )
                     logsDates.add(logsDate)

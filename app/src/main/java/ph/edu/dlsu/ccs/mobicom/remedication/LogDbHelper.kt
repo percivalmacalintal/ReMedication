@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.Calendar
 
 class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DATABASE_NAME, null, DbReferences.DATABASE_VERSION)  {
     // The singleton pattern design
@@ -42,54 +43,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
             null, // All columns
             null, // No where clause
             null, // No where arguments
-            null, // No group by
-            null, // No having
-            DbReferences.COLUMN_NAME_DATE + " DESC", // Order by date in descending order
-            null // No limit
-        )
-
-        val logs = ArrayList<Log>()
-
-        // Iterate through all the rows in the cursor
-        while (cursor.moveToNext()) {
-            val id = cursor.getLong(cursor.getColumnIndexOrThrow(DbReferences._ID))
-            val date = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DATE))
-            val time = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_TIME))
-            val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
-            val dosage = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
-            val isMissed = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_ISMISSED)) == 1 // Convert 1 to true and 0 to false
-
-            // Create a Log object and add it to the list
-            val log = Log(
-                id,
-                date,
-                time,
-                name,
-                dosage,
-                isMissed
-            )
-
-            logs.add(log)
-        }
-
-        cursor.close()
-//        database.close()
-
-        return logs
-    }
-
-    fun getAllLogsDate(date: Date): ArrayList<Log> {
-        val database: SQLiteDatabase = this.readableDatabase
-
-        // Format the date parameter to match the date format in the database (e.g., YYYY-MM-DD)
-        val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
-
-        // Query rows from the logs table where the date matches the specified date
-        val cursor: Cursor = database.query(
-            DbReferences.TABLE_NAME, // Table name
-            null, // All columns
-            DbReferences.COLUMN_NAME_DATE + " = ?", // Where clause to filter by date
-            arrayOf(formattedDate), // Arguments for the WHERE clause
             null, // No group by
             null, // No having
             DbReferences.COLUMN_NAME_DATE + " DESC", // Order by date in descending order
@@ -176,7 +129,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
 
         return logs
     }
-
 
     @Synchronized
     fun insertLog(log: Log): Long {

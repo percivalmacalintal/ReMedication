@@ -21,7 +21,6 @@ class LogsActivity : ComponentActivity() {
     private lateinit var logsDateList : ArrayList<LogsDate>
     private lateinit var medicineList : ArrayList<Medicine>
     private lateinit var myMedicineDbHelper: MedicineDbHelper
-    private lateinit var dates: ArrayList<Date>
 
     private lateinit var monthSp: Spinner
     private lateinit var daySp: Spinner
@@ -44,16 +43,7 @@ class LogsActivity : ComponentActivity() {
         this.yearSp = findViewById(R.id.yearSp)
         this.medicineSp = findViewById(R.id.medicineSp)
 
-        //  Set up Logs
-        dates = ArrayList()
-        val calendar = Calendar.getInstance()
-        for (i in 0..4) {
-            calendar.time = Date() // Reset to the current date
-            calendar.add(Calendar.DAY_OF_YEAR, -i) // Subtract i days from the current date
-            dates.add(calendar.time) // Add the date to the list
-        }
-
-        LogsDateGenerator.generateLogsDates(this, dates) { logsDates ->
+        LogsDateGenerator.generateLogsDates(this) { logsDates ->
             logsDateList = logsDates
 
             printLogsToLog()

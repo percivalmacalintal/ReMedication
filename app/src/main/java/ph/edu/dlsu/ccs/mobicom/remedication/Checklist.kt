@@ -1,6 +1,8 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
-class Checklist (image: String, medicineName: String, dosage: String, timeOfDay: Int) {
+class Checklist (id: Long, image: String, medicineName: String, dosage: String, timeOfDay: Int) {
+    var id = id
+        private set
     var image = image
         private set
     var medicineName = medicineName
@@ -9,8 +11,6 @@ class Checklist (image: String, medicineName: String, dosage: String, timeOfDay:
         private set
     var timeOfDay = timeOfDay
         private set
-    var logID: Long = -1
     var isChecked = false
     var isOverdue = false
-    var isLogCreated = false
 }
