@@ -18,15 +18,23 @@ import java.util.Calendar
 import java.util.Locale
 
 class ReminderReceiver : BroadcastReceiver() {
+    private lateinit var contextText: String
+
     override fun onReceive(context: Context, intent: Intent) {
         val label = intent.getStringExtra("reminder_label") ?: return
+        val medicineName = intent.getStringExtra("medicine_name")
+        if (medicineName != null) {
+            contextText = "Your medicine $medicineName is about to run out. It's time to refill."
+        } else {
+            contextText = "It's time to take your medication."
+        }
         Log.d("ReminderReceiver", "Alarm fired for reminder.")
 
         // Show notification
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notification = NotificationCompat.Builder(context, "reminder_channel")
             .setContentTitle("Reminder: $label")
-            .setContentText("It's time to take your medication.")
+            .setContentText(contextText)
             .setSmallIcon(R.drawable.remedication_icon)
             .setAutoCancel(true)
             .build()

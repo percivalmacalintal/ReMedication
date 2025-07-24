@@ -1,10 +1,14 @@
 package ph.edu.dlsu.ccs.mobicom.remedication
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import androidx.activity.ComponentActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -20,6 +24,18 @@ class MainActivity : ComponentActivity() {
 
         this.recyclerView = findViewById(R.id.sectionRv)
         this.emptyTv = findViewById(R.id.emptyTv)
+
+        val sharedPreferences = getSharedPreferences("ReminderPrefs", MODE_PRIVATE)
+        if (sharedPreferences.getBoolean("notification_enabled", false) &&
+            (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                    ContextCompat.checkSelfPermission(
+                        this,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED)
+        ) {
+            ReminderManager.scheduleAllDailyReminders(this, sharedPreferences)
+            ReminderManager.scheduleReminderForRefill(this, sharedPreferences)
+        }
 
         SectionDataGenerator.generateData(this) { sections ->
             sectionList = sections

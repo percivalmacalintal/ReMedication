@@ -25,7 +25,7 @@ class SectionDataGenerator {
 
                     if (filteredMedicines.isNotEmpty()) {
                         val checklistItems = filteredMedicines.map {
-                            Checklist(it.imageId, it.name, "${it.dosage} ${it.unit}")
+                            Checklist(it.imageId, it.name, "${it.dosage} ${it.unit}", i)
                         }
                         sections.add(Section(sectionTitles[i], ArrayList(checklistItems)))
                     }
