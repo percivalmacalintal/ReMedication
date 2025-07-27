@@ -6,7 +6,8 @@ import java.util.Date
 import java.util.Locale
 
 class LogsDate (date: String, logs: ArrayList<Log>, isExpanded: Boolean){
-    private var date: Date = parseDate(date)
+    var date: Date = parseDate(date)
+        private set
     var logs = logs
         private set
     var isExpanded = isExpanded

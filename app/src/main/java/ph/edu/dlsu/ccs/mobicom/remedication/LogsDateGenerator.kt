@@ -12,9 +12,10 @@ class LogsDateGenerator {
     companion object{
         private val executorService = Executors.newSingleThreadExecutor()
 
-        fun generateLogsDates(context: Context, callback: (ArrayList<LogsDate>) -> Unit) {
+        fun generateLogsDates(context: Context, callback: (ArrayList<LogsDate>, Boolean) -> Unit) {
             executorService.execute {
                 val logsDates = ArrayList<LogsDate>()
+                val isSearching = false;
                 val myLogDbHelper = LogDbHelper.getInstance(context)
                 val formatter = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
 
@@ -33,14 +34,15 @@ class LogsDateGenerator {
                 }
 
                 Handler(Looper.getMainLooper()).post {
-                    callback(logsDates)
+                    callback(logsDates, isSearching)
                 }
             }
         }
 
-        fun generateSearchLogsDates(context: Context, year: String, month: String, day: String, medicine: String, callback: (ArrayList<LogsDate>) -> Unit) {
+        fun generateSearchLogsDates(context: Context, year: String, month: String, day: String, medicine: String, callback: (ArrayList<LogsDate>, Boolean) -> Unit) {
             executorService.execute {
                 val logsDates = ArrayList<LogsDate>()
+                val isSearching = true;
                 val myLogDbHelper = LogDbHelper.getInstance(context)
                 val formatter = SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault())
 
@@ -58,7 +60,7 @@ class LogsDateGenerator {
                     logsDates.add(logsDate)
                 }
                 Handler(Looper.getMainLooper()).post {
-                    callback(logsDates)
+                    callback(logsDates, isSearching)
                 }
             }
         }

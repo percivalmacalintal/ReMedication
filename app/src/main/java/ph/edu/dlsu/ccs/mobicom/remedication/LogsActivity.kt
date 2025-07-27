@@ -14,52 +14,52 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import java.util.Calendar
 import java.util.concurrent.Executors
-import java.util.Date
 
 class LogsActivity : ComponentActivity() {
     private val executorService = Executors.newSingleThreadExecutor()
+    private var isSearching = false
     private lateinit var logsDateList : ArrayList<LogsDate>
-    private lateinit var medicineList : ArrayList<Medicine>
-    private lateinit var myMedicineDbHelper: MedicineDbHelper
-
+//    private lateinit var medicineList : ArrayList<Medicine>
+//    private lateinit var myMedicineDbHelper: MedicineDbHelper
+    private lateinit var recyclerView: RecyclerView
     private lateinit var monthSp: Spinner
     private lateinit var daySp: Spinner
     private lateinit var yearSp: Spinner
     private lateinit var medicineSp: Spinner
-
     private lateinit var searchBtn: Button
-
-    private lateinit var recyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logs)
 
         this.recyclerView = findViewById(R.id.logsRv)
-        this.searchBtn = findViewById(R.id.searchBtn)
-        //  spinners
         this.monthSp = findViewById(R.id.monthSp)
         this.daySp = findViewById(R.id.daySp)
         this.yearSp = findViewById(R.id.yearSp)
         this.medicineSp = findViewById(R.id.medicineSp)
+        this.searchBtn = findViewById(R.id.searchBtn)
 
-        LogsDateGenerator.generateLogsDates(this) { logsDates ->
+        LogsDateGenerator.generateLogsDates(this) { logsDates, isSearching ->
             logsDateList = logsDates
+            this.isSearching = isSearching
 
-            printLogsToLog()
+            val uniqueYears = getUniqueYearsFromLogs(logsDateList)
+            val uniqueMedicines = getUniqueMedicinesFromLogs(logsDateList)
+
+            setupYearSpinner(uniqueYears)
+            setupMedicineSpinner(uniqueMedicines)
 
             this.recyclerView.adapter = LogsDateAdapter(this.logsDateList)
-
             this.recyclerView.layoutManager = LinearLayoutManager(this)
+
+            printLogsToLog()
         }
 
-        //  Set up spinners
         val months = listOf("Month", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
         val monthAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, months)
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         monthSp.adapter = monthAdapter
 
-        //  day
         val days = mutableListOf("Day")
         for (i in 1..31) {
             days.add(String.format("%02d", i))
@@ -68,27 +68,25 @@ class LogsActivity : ComponentActivity() {
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         daySp.adapter = dayAdapter
 
-        //  year
-        val years = mutableListOf("Year")
-        for (i in 2025..2100) {
-            years.add(i.toString())
-        }
-        val yearAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, years)
-        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        yearSp.adapter = yearAdapter
-
-        //  medicine
-        executorService.execute {
-            myMedicineDbHelper = MedicineDbHelper.getInstance(this@LogsActivity)!!
-            medicineList = myMedicineDbHelper.getAllMedicinesDefault()
-            val medicines = mutableListOf("Medicine Name")
-            for (medicine in medicineList) {
-                medicines.add(medicine.name)
-            }
-            val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
-            medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-            medicineSp.adapter = medicineAdapter
-        }
+//        val years = mutableListOf("Year")
+//        for (i in 2025..2100) {
+//            years.add(i.toString())
+//        }
+//        val yearAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, years)
+//        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+//        yearSp.adapter = yearAdapter
+//
+//        executorService.execute {
+//            myMedicineDbHelper = MedicineDbHelper.getInstance(this@LogsActivity)!!
+//            medicineList = myMedicineDbHelper.getAllMedicinesDefault()
+//            val medicines = mutableListOf("Medicine Name")
+//            for (medicine in medicineList) {
+//                medicines.add(medicine.name)
+//            }
+//            val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
+//            medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+//            medicineSp.adapter = medicineAdapter
+//        }
 
         monthSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
@@ -140,29 +138,37 @@ class LogsActivity : ComponentActivity() {
             val selectedDay = daySp.selectedItem.toString()
             val selectedMedicine = medicineSp.selectedItem.toString()
 
-            // Check if the any spinner was used
             if (selectedYear == "Year" && selectedMonth == "Month" && selectedDay == "Day" &&
                 selectedMedicine == "Medicine Name") {
-                Toast.makeText(this, "Please select at least one filter", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
+                if(isSearching){
+                    LogsDateGenerator.generateLogsDates(this) { logsDates, isSearching ->
+                        logsDateList = logsDates
+                        this.isSearching = isSearching
 
-            // Fetch filtered logs from the database based on the spinner selections
-            executorService.execute {
-                //  Set up filter values
-                val queryYear = if (selectedYear == "Year") "%" else selectedYear
-                val queryMonth = if (selectedMonth == "Month") "%" else monthNameToNumber(selectedMonth)
-                val queryDay = if (selectedDay == "Day") "%" else selectedDay
-                val queryMedicine = if (selectedMedicine == "Medicine Name") "%" else selectedMedicine
-                // Fetch data from the database based on filters
-                LogsDateGenerator.generateSearchLogsDates(this, queryYear, queryMonth, queryDay, queryMedicine) { logsDates ->
-                    logsDateList = logsDates
+                        this.recyclerView.adapter = LogsDateAdapter(this.logsDateList)
+                        this.recyclerView.layoutManager = LinearLayoutManager(this)
 
-                    printLogsToLog()
+                        printLogsToLog()
+                    }
+                } else{
+                    Toast.makeText(this, "Please select at least one filter", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+            } else {
+                executorService.execute {
+                    val queryYear = if (selectedYear == "Year") "%" else selectedYear
+                    val queryMonth = if (selectedMonth == "Month") "%" else monthNameToNumber(selectedMonth)
+                    val queryDay = if (selectedDay == "Day") "%" else selectedDay
+                    val queryMedicine = if (selectedMedicine == "Medicine Name") "%" else selectedMedicine
+                    LogsDateGenerator.generateSearchLogsDates(this, queryYear, queryMonth, queryDay, queryMedicine) { logsDates, isSearching ->
+                        logsDateList = logsDates
+                        this.isSearching = isSearching
 
-                    this.recyclerView.adapter = LogsDateAdapter(this.logsDateList)
+                        this.recyclerView.adapter = LogsDateAdapter(this.logsDateList)
+                        this.recyclerView.layoutManager = LinearLayoutManager(this)
 
-                    this.recyclerView.layoutManager = LinearLayoutManager(this)
+                        printLogsToLog()
+                    }
                 }
             }
         }
@@ -173,20 +179,54 @@ class LogsActivity : ComponentActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.logsIt
     }
-    // change updateDaySpinner to only reset if the currently selected day would not be valid in that month/year
+
+    private fun getUniqueYearsFromLogs(logsDateList: ArrayList<LogsDate>): List<String> {
+        val years = mutableSetOf<String>()
+        for (logDate in logsDateList) {
+            val calendar = Calendar.getInstance()
+            calendar.time = logDate.date
+            val year = calendar.get(Calendar.YEAR).toString()
+            years.add(year)
+        }
+        return listOf("Year") + years.toList()
+    }
+
+    private fun getUniqueMedicinesFromLogs(logsDateList: ArrayList<LogsDate>): List<String> {
+        val medicines = mutableSetOf<String>()
+        for (logDate in logsDateList) {
+            for (log in logDate.logs) {
+                val medicineName = log.name
+                medicines.add(medicineName)
+            }
+        }
+        return listOf("Medicine Name") + medicines.toList()
+    }
+
+    private fun setupYearSpinner(years: List<String>) {
+        val yearAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, years)
+        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        yearSp.adapter = yearAdapter
+    }
+
+    private fun setupMedicineSpinner(medicines: List<String>) {
+        val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
+        medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        medicineSp.adapter = medicineAdapter
+    }
+
     private fun updateDaySpinner() {
         val selectedMonth = if (monthSp.selectedItemPosition == 0) {
             1
         } else {
             monthSp.selectedItemPosition
         }
-        val selectedYear = if (yearSp.selectedItemPosition == 0) {
+        val selectedYear = if (yearSp.selectedItem == null || yearSp.selectedItem.toString() == "Year") {
             2025
         } else {
             yearSp.selectedItem.toString().toInt()
         }
         val maxDays = getMaxDaysInMonth(selectedMonth, selectedYear)
-
+        val currentSelectedDay = daySp.selectedItem.toString().toIntOrNull()
         val days = mutableListOf("Day")
         for (i in 1..maxDays) {
             days.add(String.format("%02d", i))
@@ -194,6 +234,14 @@ class LogsActivity : ComponentActivity() {
         val dayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         daySp.adapter = dayAdapter
+        if (currentSelectedDay == null || currentSelectedDay > maxDays) {
+            daySp.setSelection(0)
+        } else {
+            val dayPosition = days.indexOf(String.format("%02d", currentSelectedDay))
+            if (dayPosition != -1) {
+                daySp.setSelection(dayPosition)
+            }
+        }
     }
 
     private fun getMaxDaysInMonth(month: Int, year: Int): Int {
@@ -206,7 +254,6 @@ class LogsActivity : ComponentActivity() {
     }
 
     private fun monthNameToNumber(monthName: String): String {
-        // A map of month names to their corresponding numbers (01 to 12)
         val monthMap = mapOf(
             "January" to "01",
             "February" to "02",
@@ -222,7 +269,6 @@ class LogsActivity : ComponentActivity() {
             "December" to "12"
         )
 
-        // Return the corresponding month number or an empty string if the month name is invalid
         return monthMap[monthName] ?: ""
     }
 
