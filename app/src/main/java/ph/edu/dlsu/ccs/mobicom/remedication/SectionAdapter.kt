@@ -103,7 +103,7 @@ class SectionAdapter(private val sections: List<Section>) :
                             formattedTime,
                             item.medicineName,
                             item.dosage,
-                            true  //overdue
+                            LogStatus.MISSED
                         )
                         val newId = myDbHelper.insertLog(log)
                         saveNewLog(item.id, newId, true, context)

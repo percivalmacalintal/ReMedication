@@ -20,7 +20,7 @@
             android:id="@+id/noLogsTv"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No Scheduled Medications"
+            android:text="No Logs For This Day"
             android:textAlignment="center"
             android:textSize="16sp"
             android:textStyle="bold" />

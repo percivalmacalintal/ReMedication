@@ -10,7 +10,9 @@
     <color name="red">#FF0000</color>
     <color name="pastel_red">#FF6961</color>
     <color name="pastel_green">#77DD77</color>
+    <color name="pastel_yellow">#FFEB8A</color>
     <color name="lighter_pastel_red">#FFB3AE</color>
     <color name="lighter_pastel_green">#B5F2B5</color>
+    <color name="lighter_pastel_yellow">#FFF5A5</color>
     <color name="primary_color">#5F7CA3</color>
 </resources>

@@ -33,7 +33,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
     fun getAllLogsDefault(): ArrayList<Log> {
         val database: SQLiteDatabase = this.readableDatabase
 
-        // Query all rows from the logs table
         val cursor: Cursor = database.query(
             DbReferences.TABLE_NAME, // Table name
             null, // All columns
@@ -47,30 +46,27 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
 
         val logs = ArrayList<Log>()
 
-        // Iterate through all the rows in the cursor
         while (cursor.moveToNext()) {
             val id = cursor.getLong(cursor.getColumnIndexOrThrow(DbReferences._ID))
             val date = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DATE))
             val time = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_TIME))
             val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
             val dosage = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
-            val isMissed = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_ISMISSED)) == 1 // Convert 1 to true and 0 to false
+            val status = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_STATUS))
 
-            // Create a Log object and add it to the list
             val log = Log(
                 id,
                 date,
                 time,
                 name,
                 dosage,
-                isMissed
+                LogStatus.fromInt(status)
             )
 
             logs.add(log)
         }
 
         cursor.close()
-//        database.close()
 
         return logs
     }
@@ -81,10 +77,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
         val dateArg =  if(month == "%" && day == "%") "$year-%" else "$year-$month-$day"
 
         android.util.Log.d("LogDbHelper", "dateArg: $dateArg")
-        // Format the date parameter to match the date format in the database (e.g., YYYY-MM-DD)
-//        val formattedDate = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
-
-        // Query rows from the logs table where the date matches the specified date
         val cursor: Cursor = database.query(
             DbReferences.TABLE_NAME, // Table name
             null, // All columns
@@ -98,30 +90,27 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
 
         val logs = ArrayList<Log>()
 
-        // Iterate through all the rows in the cursor
         while (cursor.moveToNext()) {
             val id = cursor.getLong(cursor.getColumnIndexOrThrow(DbReferences._ID))
             val date = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DATE))
             val time = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_TIME))
             val name = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_NAME))
             val dosage = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_DOSAGE))
-            val isMissed = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_ISMISSED)) == 1 // Convert 1 to true and 0 to false
+            val status = cursor.getInt(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_STATUS))
 
-            // Create a Log object and add it to the list
             val log = Log(
                 id,
                 date,
                 time,
                 name,
                 dosage,
-                isMissed
+                LogStatus.fromInt(status)
             )
 
             logs.add(log)
         }
 
         cursor.close()
-//        database.close()
 
         return logs
     }
@@ -130,21 +119,17 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
     fun insertLog(log: Log): Long {
         val database = this.writableDatabase
 
-        // Create a new map of values, where column names are the keys
         val values = ContentValues()
-        values.put(DbReferences.COLUMN_NAME_DATE, log.getFormattedDate())  // Store the log date
-        values.put(DbReferences.COLUMN_NAME_TIME, log.time)  // Store the time of the log
-        values.put(DbReferences.COLUMN_NAME_NAME, log.name)  // Store the name of the medication or action
-        values.put(DbReferences.COLUMN_NAME_DOSAGE, log.dosage)  // Store the dosage
-        values.put(DbReferences.COLUMN_NAME_ISMISSED, if (log.isMissed) 1 else 0)  // Store the missed status (1 for true, 0 for false)
+        values.put(DbReferences.COLUMN_NAME_DATE, log.getFormattedDate())
+        values.put(DbReferences.COLUMN_NAME_TIME, log.time)
+        values.put(DbReferences.COLUMN_NAME_NAME, log.name)
+        values.put(DbReferences.COLUMN_NAME_DOSAGE, log.dosage)
+        values.put(DbReferences.COLUMN_NAME_STATUS, log.status.value)
 
-        // Insert the new log row into the database
         val id = database.insert(DbReferences.TABLE_NAME, null, values)
 
-        // Close the database
-//        database.close()
 
-        return id  // Return the ID of the newly inserted log
+        return id
     }
 
     @Synchronized
@@ -171,7 +156,7 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
         const val COLUMN_NAME_TIME = "time"
         const val COLUMN_NAME_NAME = "name"
         const val COLUMN_NAME_DOSAGE = "dosage"
-        const val COLUMN_NAME_ISMISSED = "isMissed"
+        const val COLUMN_NAME_STATUS = "status"
 
         const val CREATE_TABLE_STATEMENT =
             "CREATE TABLE IF NOT EXISTS $TABLE_NAME (" +
@@ -180,7 +165,7 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
                     "$COLUMN_NAME_TIME TEXT, " +
                     "$COLUMN_NAME_NAME TEXT, " +
                     "$COLUMN_NAME_DOSAGE TEXT, " +
-                    "$COLUMN_NAME_ISMISSED INT)"    //Boolean
+                    "$COLUMN_NAME_STATUS INT)"    //Boolean
 
         const val DROP_TABLE_STATEMENT = "DROP TABLE IF EXISTS $TABLE_NAME"
     }

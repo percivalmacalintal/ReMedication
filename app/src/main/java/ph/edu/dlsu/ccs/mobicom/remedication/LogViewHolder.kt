@@ -16,10 +16,14 @@ class LogViewHolder(itemView: View): ViewHolder(itemView){
         logDosageTv.text = log.dosage
         logTimeTv.text = log.time
 
-        if (log.getIsMissed()) {
+        if (log.status == LogStatus.ONTIME) {
+            logCardCl.setCardBackgroundColor(itemView.context.getColor(R.color.lighter_pastel_green))
+        } else if (log.status == LogStatus.LATE){
+            logCardCl.setCardBackgroundColor(itemView.context.getColor(R.color.lighter_pastel_yellow))
+        }else if (log.status == LogStatus.MISSED){
             logCardCl.setCardBackgroundColor(itemView.context.getColor(R.color.lighter_pastel_red))
-        } else {
-            logCardCl.setCardBackgroundColor(itemView.context.getColor(R.color.lighter_pastel_green)) // or default color
+        } else{
+            logCardCl.setCardBackgroundColor(itemView.context.getColor(R.color.purple_200)) // something wrong
         }
 
     }

@@ -84,23 +84,28 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
 
             val isLogCreated = getIsLogCreated(checklist.id, itemView.context)
 
-            if (checklist.isChecked && !isLogCreated && !checklist.isOverdue){
-                executorService.execute {   //  add new log when checked
-                    val currentDate = Date()
-                    val formattedDate = dateFormat.format(currentDate)
-                    val formattedTime = timeFormat.format(currentDate)
-                    val log = Log(
-                        formattedDate,   //now
-                        formattedTime,   //this time
-                        mtv.text.toString(),
-                        dtv.text.toString(),
-                        false
-                    )
-                    val newId = myDbHelper.insertLog(log)
-                    saveNewLog(checklist.id, newId, true, itemView.context)
-                    android.util.Log.d("ChecklistViewHolder", "new Log Taken: $newId")
+            if (checklist.isChecked && !isLogCreated){
+                if(checklist.isOverdue){    //  late logic
+
                 }
-            } else if (!checklist.isChecked && isLogCreated && !checklist.isOverdue){
+                else{   //  on time logic
+                    executorService.execute {
+                        val currentDate = Date()
+                        val formattedDate = dateFormat.format(currentDate)
+                        val formattedTime = timeFormat.format(currentDate)
+                        val log = Log(
+                            formattedDate,   //now
+                            formattedTime,   //this time
+                            mtv.text.toString(),
+                            dtv.text.toString(),
+                            LogStatus.ONTIME
+                        )
+                        val newId = myDbHelper.insertLog(log)
+                        saveNewLog(checklist.id, newId, true, itemView.context)
+                        android.util.Log.d("ChecklistViewHolder", "new Log Taken: $newId")
+                    }
+                }
+            } else if (!checklist.isChecked && isLogCreated){
                 executorService.execute {   //  delete log if unchecked
                     val logId = getLogId(checklist.id, itemView.context)
                     if (logId != -1L) {

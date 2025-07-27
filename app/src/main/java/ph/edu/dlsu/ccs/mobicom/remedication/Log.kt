@@ -9,31 +9,31 @@ class Log{
     var time: String = ""
     var name: String = ""
     var dosage: String = ""
-    var isMissed: Boolean = true
+    var status: LogStatus = LogStatus.MISSED
 
-    constructor(date: String, time: String, name: String, dosage: String, isMissed: Boolean) {
+    constructor(date: String, time: String, name: String, dosage: String, status: LogStatus) {
         this.date = parseDate(date)
         this.time = time
         this.name = name
         this.dosage = dosage
-        this.isMissed = isMissed
+        this.status = status
     }
 
-    constructor(id: Long, date: String, time: String, name: String, dosage: String, isMissed: Boolean) {
+    constructor(id: Long, date: String, time: String, name: String, dosage: String, status: LogStatus) {
         this.id = id
         this.date = parseDate(date)
         this.time = time
         this.name = name
         this.dosage = dosage
-        this.isMissed = isMissed
+        this.status = status
     }
 
-    fun getIsMissed(): Boolean{
-        return this.isMissed
+    fun getStatus(): LogStatus{
+        return this.status
     }
 
-    fun setIsMissed(isMissed: Boolean){
-        this.isMissed = isMissed
+    fun setStatus(status: LogStatus){
+        this.status = status
     }
 
     private fun parseDate(dateString: String): Date {
