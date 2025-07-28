@@ -132,6 +132,23 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
         return id
     }
 
+    fun updateLog(id: Long, time: String, status: LogStatus): Int {
+        val database = this.writableDatabase
+
+        val values = ContentValues()
+        values.put(DbReferences.COLUMN_NAME_TIME, time)
+        values.put(DbReferences.COLUMN_NAME_STATUS, status.value)
+
+        val rowsUpdated = database.update(
+            DbReferences.TABLE_NAME,
+            values,
+            "${DbReferences._ID} = ?",
+            arrayOf(id.toString())
+        )
+
+        return rowsUpdated
+    }
+
     @Synchronized
     fun deleteLog(id: Long): Int {
         val database = this.writableDatabase

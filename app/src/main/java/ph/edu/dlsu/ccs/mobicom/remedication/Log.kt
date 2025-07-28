@@ -28,13 +28,13 @@ class Log{
         this.status = status
     }
 
-    fun getStatus(): LogStatus{
-        return this.status
-    }
-
-    fun setStatus(status: LogStatus){
-        this.status = status
-    }
+//    fun getStatus(): LogStatus{
+//        return this.status
+//    }
+//
+//    fun setStatus(status: LogStatus){
+//        this.status = status
+//    }
 
     private fun parseDate(dateString: String): Date {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
