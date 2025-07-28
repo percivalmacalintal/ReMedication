@@ -7,6 +7,7 @@ import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -19,14 +20,13 @@ class LogsActivity : ComponentActivity() {
     private val executorService = Executors.newSingleThreadExecutor()
     private var isSearching = false
     private lateinit var logsDateList : ArrayList<LogsDate>
-//    private lateinit var medicineList : ArrayList<Medicine>
-//    private lateinit var myMedicineDbHelper: MedicineDbHelper
     private lateinit var recyclerView: RecyclerView
     private lateinit var monthSp: Spinner
     private lateinit var daySp: Spinner
     private lateinit var yearSp: Spinner
     private lateinit var medicineSp: Spinner
     private lateinit var searchBtn: Button
+    private lateinit var emptyTv: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +38,7 @@ class LogsActivity : ComponentActivity() {
         this.yearSp = findViewById(R.id.yearSp)
         this.medicineSp = findViewById(R.id.medicineSp)
         this.searchBtn = findViewById(R.id.searchBtn)
+        this.emptyTv = findViewById(R.id.emptyTv)
 
         LogsDateGenerator.generateLogsDates(this) { logsDates, isSearching ->
             logsDateList = logsDates
@@ -49,10 +50,11 @@ class LogsActivity : ComponentActivity() {
             setupYearSpinner(uniqueYears)
             setupMedicineSpinner(uniqueMedicines)
 
-            this.recyclerView.adapter = LogsDateAdapter(this.logsDateList)
+            val adapter = LogsDateAdapter(logsDateList)
+            this.recyclerView.adapter = adapter
             this.recyclerView.layoutManager = LinearLayoutManager(this)
 
-            printLogsToLog()
+            showOrHideEmptyMessage(adapter)
         }
 
         val months = listOf("Month", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
@@ -67,26 +69,6 @@ class LogsActivity : ComponentActivity() {
         val dayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
         dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         daySp.adapter = dayAdapter
-
-//        val years = mutableListOf("Year")
-//        for (i in 2025..2100) {
-//            years.add(i.toString())
-//        }
-//        val yearAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, years)
-//        yearAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-//        yearSp.adapter = yearAdapter
-//
-//        executorService.execute {
-//            myMedicineDbHelper = MedicineDbHelper.getInstance(this@LogsActivity)!!
-//            medicineList = myMedicineDbHelper.getAllMedicinesDefault()
-//            val medicines = mutableListOf("Medicine Name")
-//            for (medicine in medicineList) {
-//                medicines.add(medicine.name)
-//            }
-//            val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
-//            medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-//            medicineSp.adapter = medicineAdapter
-//        }
 
         monthSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
@@ -178,6 +160,36 @@ class LogsActivity : ComponentActivity() {
         setIntent(intent)
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.logsIt
+    }
+
+    private fun showOrHideEmptyMessage(adapter: LogsDateAdapter) {
+        if (adapter.isAllLogsEmpty()) {
+            recyclerView.visibility = View.GONE
+            emptyTv.visibility      = View.VISIBLE
+            disableUIElements()
+            android.util.Log.d("LogsActivity", "No Logs to Print")
+        } else {
+            recyclerView.visibility = View.VISIBLE
+            emptyTv.visibility      = View.GONE
+            enableUIElements()
+            printLogsToLog()
+        }
+    }
+
+    private fun disableUIElements() {
+        monthSp.isEnabled = false
+        daySp.isEnabled = false
+        yearSp.isEnabled = false
+        medicineSp.isEnabled = false
+        searchBtn.isEnabled = false
+    }
+
+    private fun enableUIElements() {
+        monthSp.isEnabled = true
+        daySp.isEnabled = true
+        yearSp.isEnabled = true
+        medicineSp.isEnabled = true
+        searchBtn.isEnabled = true
     }
 
     private fun getUniqueYearsFromLogs(logsDateList: ArrayList<LogsDate>): List<String> {

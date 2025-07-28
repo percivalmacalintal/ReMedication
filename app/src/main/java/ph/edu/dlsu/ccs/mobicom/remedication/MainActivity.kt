@@ -88,6 +88,7 @@ class MainActivity : ComponentActivity() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.homeIt  // Or whatever your home item ID is
     }
+
     private fun showOrHideEmptyMessage(adapter: SectionAdapter) {
         if (adapter.isAllSectionsEmpty()) {
             recyclerView.visibility = View.GONE

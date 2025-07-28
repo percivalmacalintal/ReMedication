@@ -30,8 +30,6 @@ import java.util.concurrent.Executors
 import kotlin.math.log
 
 class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
-    // In our item layout, we need two references -- an ImageView and a TextView. Please note that
-    // the itemView is the RecyclerView -- which has context that we can use to find View instances.
     private val executorService = Executors.newSingleThreadExecutor()
     private lateinit var myDbHelper: LogDbHelper
 
@@ -41,7 +39,6 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
     private val cb: CheckBox = itemView.findViewById(R.id.checklistCb)
     private val sharedPreferences: SharedPreferences = itemView.context.getSharedPreferences("ReminderPrefs", Context.MODE_PRIVATE)
 
-    // This is our own method that accepts a Character object and sets our views' info accordingly.
     fun bindData(checklist: Checklist, position: Int, adapter: ChecklistAdapter) {
         myDbHelper = LogDbHelper.getInstance(itemView.context.applicationContext)!!
 
@@ -90,11 +87,11 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
                     val formattedDate = dateFormat.format(currentDate)
                     val formattedTime = timeFormat.format(currentDate)
 
-                    if(isLogCreated) {
+                    if(isLogCreated) {  // late
                         val logId = getLogId(checklist.id, itemView.context)
                         myDbHelper.updateLog(logId, formattedTime, logStatus)
-                        android.util.Log.d("ChecklistViewHolder", "Updated Log: $logId")
-                    } else {
+                        android.util.Log.d("ChecklistViewHolder", "Updated to Late Log: $logId")
+                    } else {    // on time
                         val log = Log(
                             formattedDate,   //now
                             formattedTime,   //this time
@@ -109,12 +106,20 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
                 }
             } else {
                 if (isLogCreated) {
-                    executorService.execute {   //  delete log if unchecked
+                    val currentDate = Date()
+                    val formattedTime = timeFormat.format(currentDate)
+                    val logId = getLogId(checklist.id, itemView.context)
+                    if (checklist.isOverdue){
                         val logId = getLogId(checklist.id, itemView.context)
-                        if (logId != -1L) {
-                            myDbHelper.deleteLog(logId)
-                            deleteLog(checklist.id, itemView.context)
-                            android.util.Log.d("ChecklistViewHolder", "Deleted Log: $logId")
+                        myDbHelper.updateLog(logId, formattedTime, LogStatus.MISSED)
+                        android.util.Log.d("ChecklistViewHolder", "Updated to Missed Log: $logId")
+                    } else {
+                        executorService.execute {   //  delete
+                            if (logId != -1L) {
+                                myDbHelper.deleteLog(logId)
+                                deleteLog(checklist.id, itemView.context)
+                                android.util.Log.d("ChecklistViewHolder", "Deleted Log: $logId")
+                            }
                         }
                     }
                 } else {

@@ -7,8 +7,6 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DATABASE_NAME, null, DbReferences.DATABASE_VERSION) {
-
-    // The singleton pattern design
     companion object {
         private var instance: MedicineDbHelper? = null
 
@@ -25,7 +23,6 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
         sqLiteDatabase.execSQL(DbReferences.CREATE_TABLE_STATEMENT)
     }
 
-    // Called when a new version of the DB is present; hence, an "upgrade" to a newer version
     override fun onUpgrade(sqLiteDatabase: SQLiteDatabase, i: Int, i1: Int) {
         sqLiteDatabase.execSQL(DbReferences.DROP_TABLE_STATEMENT)
         onCreate(sqLiteDatabase)
@@ -41,7 +38,7 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
             null,
             null,
             null,
-            DbReferences.COLUMN_NAME_NAME + " ASC", // Order by medicine name
+            DbReferences._ID + " ASC", // Order by ID
             null
         )
 
@@ -59,8 +56,7 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
             val start = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_START))
             val end = cursor.getString(cursor.getColumnIndexOrThrow(DbReferences.COLUMN_NAME_END))
 
-            // Convert comma-separated timeOfDay string to List<Int>
-            val timeOfDay: List<Int> = timeOfDayStr
+            val timeOfDay: List<Int> = timeOfDayStr // Convert comma-separated timeOfDay string to List<Int>
                 .split(",")
                 .mapNotNull { it.trim().toIntOrNull() }
 
@@ -90,7 +86,6 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
     fun insertMedicine(m: Medicine): Long {
         val database = this.writableDatabase
 
-        // Create a new map of values, where column names are the keys
         val values = ContentValues()
         values.put(DbReferences.COLUMN_NAME_IMAGE_ID, m.imageId)
         values.put(DbReferences.COLUMN_NAME_NAME, m.name)
@@ -98,7 +93,6 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
         values.put(DbReferences.COLUMN_NAME_UNIT, m.unit)
         values.put(DbReferences.COLUMN_NAME_FREQUENCY, m.frequency)
 
-        // Convert the List<Int> timeOfDay to a comma-separated string
         val timeOfDayString = m.timeOfDay.joinToString(",")
         values.put(DbReferences.COLUMN_NAME_TIME_OF_DAY, timeOfDayString)
 
@@ -106,10 +100,8 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
         values.put(DbReferences.COLUMN_NAME_START, m.getFormattedStartDate())
         values.put(DbReferences.COLUMN_NAME_END, m.getFormattedEndDate())
 
-        // Insert the new row into the database
         val id = database.insert(DbReferences.TABLE_NAME, null, values)
 
-        // Close the database
         database.close()
 
         return id
@@ -119,7 +111,6 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
     fun updateMedicine(m: Medicine, id: Long): Int {
         val database = this.writableDatabase
 
-        // Create a new ContentValues object to hold the updated values
         val values = ContentValues()
         values.put(DbReferences.COLUMN_NAME_IMAGE_ID, m.imageId)
         values.put(DbReferences.COLUMN_NAME_NAME, m.name)
@@ -127,7 +118,6 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
         values.put(DbReferences.COLUMN_NAME_UNIT, m.unit)
         values.put(DbReferences.COLUMN_NAME_FREQUENCY, m.frequency)
 
-        // Convert timeOfDay list to a comma-separated string
         val timeOfDayString = m.timeOfDay.joinToString(",")
         values.put(DbReferences.COLUMN_NAME_TIME_OF_DAY, timeOfDayString)
 
@@ -135,7 +125,6 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
         values.put(DbReferences.COLUMN_NAME_START, m.getFormattedStartDate())
         values.put(DbReferences.COLUMN_NAME_END, m.getFormattedEndDate())
 
-        // Perform the update operation
         val rowsAffected = database.update(
             DbReferences.TABLE_NAME,
             values,
@@ -143,10 +132,9 @@ class MedicineDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferenc
             arrayOf(id.toString())
         )
 
-        // Close the database connection
         database.close()
 
-        return rowsAffected // Return the number of rows affected by the update
+        return rowsAffected
     }
 
     @Synchronized

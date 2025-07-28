@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 
 class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DATABASE_NAME, null, DbReferences.DATABASE_VERSION)  {
-    // The singleton pattern design
     companion object {
         private var instance: LogDbHelper? = null
 
@@ -24,7 +23,6 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
         sqLiteDatabase.execSQL(DbReferences.CREATE_TABLE_STATEMENT)
     }
 
-    // Called when a new version of the DB is present; hence, an "upgrade" to a newer version
     override fun onUpgrade(sqLiteDatabase: SQLiteDatabase, i: Int, i1: Int) {
         sqLiteDatabase.execSQL(DbReferences.DROP_TABLE_STATEMENT)
         onCreate(sqLiteDatabase)
@@ -182,7 +180,7 @@ class LogDbHelper(context: Context?) : SQLiteOpenHelper(context, DbReferences.DA
                     "$COLUMN_NAME_TIME TEXT, " +
                     "$COLUMN_NAME_NAME TEXT, " +
                     "$COLUMN_NAME_DOSAGE TEXT, " +
-                    "$COLUMN_NAME_STATUS INT)"    //Boolean
+                    "$COLUMN_NAME_STATUS INT)"    // LogStatus
 
         const val DROP_TABLE_STATEMENT = "DROP TABLE IF EXISTS $TABLE_NAME"
     }

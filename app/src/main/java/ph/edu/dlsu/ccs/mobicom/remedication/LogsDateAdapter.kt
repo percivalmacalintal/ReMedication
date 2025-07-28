@@ -30,4 +30,7 @@ class LogsDateAdapter (private val logsDates: List<LogsDate>) :
     }
 
     override fun getItemCount(): Int = logsDates.size
+
+    fun isAllLogsEmpty(): Boolean =
+        logsDates.all { it.logs.isEmpty() }
 }

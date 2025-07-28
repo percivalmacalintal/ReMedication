@@ -25,9 +25,10 @@ class LogsDateGenerator {
                 for ((index, uniqueDate) in uniqueDates.withIndex()) {
                     val formattedDate = formatter.format(uniqueDate)
                     val logsForThisDate = logList.filter { it.date == uniqueDate }
+                    val sortedLogsForThisDate = ArrayList(logsForThisDate.sortedBy { it.id })
                     val logsDate = LogsDate(
                         formattedDate,
-                        logsForThisDate as ArrayList<Log>,
+                        sortedLogsForThisDate,
                         index == 0
                     )
                     logsDates.add(logsDate)
@@ -52,9 +53,10 @@ class LogsDateGenerator {
                 for ((index, uniqueDate) in uniqueDates.withIndex()) {
                     val formattedDate = formatter.format(uniqueDate)
                     val logsForThisDate = logList.filter { it.date == uniqueDate }
+                    val sortedLogsForThisDate = ArrayList(logsForThisDate.sortedBy { it.id })
                     val logsDate = LogsDate(
                         formattedDate,
-                        logsForThisDate as ArrayList<Log>,
+                        sortedLogsForThisDate,
                         index == 0
                     )
                     logsDates.add(logsDate)
