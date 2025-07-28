@@ -31,7 +31,7 @@ class LogsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_logs)
-
+        
         this.recyclerView = findViewById(R.id.logsRv)
         this.monthSp = findViewById(R.id.monthSp)
         this.daySp = findViewById(R.id.daySp)
@@ -39,6 +39,10 @@ class LogsActivity : ComponentActivity() {
         this.medicineSp = findViewById(R.id.medicineSp)
         this.searchBtn = findViewById(R.id.searchBtn)
         this.emptyTv = findViewById(R.id.emptyTv)
+
+        setupMonthSpinner()
+        setupDaySpinner()
+        setupSpinnerListeners()
 
         LogsDateGenerator.generateLogsDates(this) { logsDates, isSearching ->
             logsDateList = logsDates
@@ -56,34 +60,7 @@ class LogsActivity : ComponentActivity() {
 
             showOrHideEmptyMessage(adapter)
         }
-
-        val months = listOf("Month", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
-        val monthAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, months)
-        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        monthSp.adapter = monthAdapter
-
-        val days = mutableListOf("Day")
-        for (i in 1..31) {
-            days.add(String.format("%02d", i))
-        }
-        val dayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
-        dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        daySp.adapter = dayAdapter
-
-        monthSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
-                updateDaySpinner()
-            }
-            override fun onNothingSelected(parentView: AdapterView<*>?) {}
-        }
-
-        yearSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
-                updateDaySpinner()
-            }
-            override fun onNothingSelected(parentView: AdapterView<*>?) {}
-        }
-
+        
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.logsIt
         bottomNav.setOnItemSelectedListener { item ->
@@ -155,6 +132,7 @@ class LogsActivity : ComponentActivity() {
             }
         }
     }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
@@ -220,10 +198,59 @@ class LogsActivity : ComponentActivity() {
         yearSp.adapter = yearAdapter
     }
 
+    private fun setupMonthSpinner() {
+        val months = listOf("Month", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December")
+        val monthAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, months)
+        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        monthSp.adapter = monthAdapter
+    }
+
+    private fun setupDaySpinner() {
+        val days = mutableListOf("Day")
+        for (i in 1..31) {
+            days.add(String.format("%02d", i))
+        }
+        val dayAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, days)
+        dayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        daySp.adapter = dayAdapter
+    }
+
     private fun setupMedicineSpinner(medicines: List<String>) {
         val medicineAdapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, medicines)
         medicineAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         medicineSp.adapter = medicineAdapter
+    }
+
+    private fun setupSpinnerListeners() {
+        yearSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
+                updateDaySpinner()
+                
+            }
+            override fun onNothingSelected(parentView: AdapterView<*>?) {}
+        }
+
+        monthSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
+                updateDaySpinner()
+                
+            }
+            override fun onNothingSelected(parentView: AdapterView<*>?) {}
+        }
+
+        daySp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
+                
+            }
+            override fun onNothingSelected(parentView: AdapterView<*>?) {}
+        }
+
+        medicineSp.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parentView: AdapterView<*>?, selectedItemView: View?, position: Int, id: Long) {
+                
+            }
+            override fun onNothingSelected(parentView: AdapterView<*>?) {}
+        }
     }
 
     private fun updateDaySpinner() {
