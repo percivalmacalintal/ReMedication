@@ -9,6 +9,7 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView.ViewHolder
 import com.bumptech.glide.Glide
@@ -55,7 +56,8 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
         cb.isChecked = checklist.isChecked
 
         val bgColor = when {
-            checklist.isChecked -> 0xFFB5F2B5.toInt()
+            checklist.isChecked && !checklist.isOverdue-> 0xFFB5F2B5.toInt()
+            checklist.isChecked && checklist.isOverdue-> 0xFFFDFD96.toInt()
             checklist.isOverdue -> 0xFFFDBEC7.toInt()
             else            -> 0xFFFFFFFF.toInt()
         }
@@ -72,46 +74,14 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
         dtv.alpha = alpha
         cb.alpha  = alpha
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()) // Date format (year-month-day)
-        val timeFormat = SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault()) // Time format (hours:minutes:seconds)
-
         cb.setOnClickListener {
-            checklist.isChecked = !checklist.isChecked
+            val newCheckedState = !checklist.isChecked
 
-            val editor = sharedPreferences.edit()
-            editor.putBoolean("checklist_${checklist.medicineName}_${checklist.timeOfDay}_checked", checklist.isChecked)
-            editor.apply()
-
-            val isLogCreated = getIsLogCreated(checklist.id, itemView.context)
-
-            if (checklist.isChecked && !isLogCreated && !checklist.isOverdue){
-                executorService.execute {   //  add new log when checked
-                    val currentDate = Date()
-                    val formattedDate = dateFormat.format(currentDate)
-                    val formattedTime = timeFormat.format(currentDate)
-                    val log = Log(
-                        formattedDate,   //now
-                        formattedTime,   //this time
-                        mtv.text.toString(),
-                        dtv.text.toString(),
-                        false
-                    )
-                    val newId = myDbHelper.insertLog(log)
-                    saveNewLog(checklist.id, newId, true, itemView.context)
-                    android.util.Log.d("ChecklistViewHolder", "new Log Taken: $newId")
-                }
-            } else if (!checklist.isChecked && isLogCreated && !checklist.isOverdue){
-                executorService.execute {   //  delete log if unchecked
-                    val logId = getLogId(checklist.id, itemView.context)
-                    if (logId != -1L) {
-                        android.util.Log.d("ChecklistViewHolder", "Deleting Log with ID: $logId")
-                        myDbHelper.deleteLog(logId)
-                        deleteLog(checklist.id, itemView.context)
-                        android.util.Log.d("ChecklistViewHolder", "Log Deleted: $logId")
-                    }
-                }
+            if (newCheckedState) {
+                handleCheckboxChange(checklist, position, adapter, newCheckedState)
+            } else {
+                showUncheckConfirmationDialog(checklist, position, adapter)
             }
-            adapter.notifyItemChanged(position)
         }
     }
 
@@ -139,5 +109,75 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
     fun getLogId(itemId: Long, context: Context): Long {
         val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
         return sharedPref.getLong("logId_$itemId", -1L)
+    }
+
+    private fun handleCheckboxChange(checklist: Checklist, position: Int, adapter: ChecklistAdapter, isChecked: Boolean) {
+        checklist.isChecked = isChecked
+
+        val editor = sharedPreferences.edit()
+        editor.putBoolean("checklist_${checklist.medicineName}_${checklist.timeOfDay}_checked", checklist.isChecked)
+        editor.apply()
+
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val timeFormat = SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
+
+        val isLogCreated = getIsLogCreated(checklist.id, itemView.context)
+
+        if (checklist.isChecked && !isLogCreated && !checklist.isOverdue) {
+            executorService.execute {
+                val currentDate = Date()
+                val formattedDate = dateFormat.format(currentDate)
+                val formattedTime = timeFormat.format(currentDate)
+                val log = Log(
+                    formattedDate,
+                    formattedTime,
+                    mtv.text.toString(),
+                    dtv.text.toString(),
+                    false
+                )
+                val newId = myDbHelper.insertLog(log)
+                saveNewLog(checklist.id, newId, true, itemView.context)
+                android.util.Log.d("ChecklistViewHolder", "new Log Taken: $newId")
+
+                // Update UI on main thread
+                itemView.post {
+                    adapter.notifyItemChanged(position)
+                }
+            }
+        } else if (!checklist.isChecked && isLogCreated && !checklist.isOverdue) {
+            executorService.execute {
+                val logId = getLogId(checklist.id, itemView.context)
+                if (logId != -1L) {
+                    android.util.Log.d("ChecklistViewHolder", "Deleting Log with ID: $logId")
+                    myDbHelper.deleteLog(logId)
+                    deleteLog(checklist.id, itemView.context)
+                    android.util.Log.d("ChecklistViewHolder", "Log Deleted: $logId")
+
+                    // Update UI on main thread
+                    itemView.post {
+                        adapter.notifyItemChanged(position)
+                    }
+                }
+            }
+        } else {
+            adapter.notifyItemChanged(position)
+        }
+    }
+
+    private fun showUncheckConfirmationDialog(checklist: Checklist, position: Int, adapter: ChecklistAdapter) {
+        AlertDialog.Builder(itemView.context)
+            .setTitle("Confirm Uncheck")
+            .setMessage("Are you sure you want to uncheck this item?")
+            .setPositiveButton("Yes") { dialog, _ ->
+                handleCheckboxChange(checklist, position, adapter, false)
+                dialog.dismiss()
+            }
+            .setNegativeButton("No") { dialog, _ ->
+                // Keep the checkbox checked
+                cb.isChecked = true
+                dialog.dismiss()
+            }
+            .setCancelable(false)
+            .show()
     }
 }

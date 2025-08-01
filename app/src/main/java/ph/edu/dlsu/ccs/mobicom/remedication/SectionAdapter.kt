@@ -74,7 +74,7 @@ class SectionAdapter(private val sections: List<Section>) :
         )
 
         val currentHour = getLocalTime().get(Calendar.HOUR_OF_DAY)
-        val currentPeriod = when (currentHour + 6) {  // Shift current hour by +6 if needed
+        val currentPeriod = when (currentHour) {
             in 0..5   -> 0
             in 6..11  -> 1
             in 12..17 -> 2
