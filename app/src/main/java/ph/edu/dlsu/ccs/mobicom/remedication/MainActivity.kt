@@ -13,7 +13,13 @@ import androidx.activity.ComponentActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
     private lateinit var sectionList: ArrayList<Section>
@@ -51,6 +57,23 @@ class MainActivity : ComponentActivity() {
                 showOrHideEmptyMessage(adapter)
             }
         }
+
+        val constraints = Constraints.Builder()
+            .setRequiresBatteryNotLow(true)
+            .build()
+
+        val resetRequest = PeriodicWorkRequestBuilder<ChecklistResetWorker>(1, TimeUnit.DAYS)
+            .setConstraints(constraints)
+            .setInitialDelay(getDelayUntilMidnight(), TimeUnit.MILLISECONDS)
+            .addTag("daily-checklist-reset")
+            .build()
+
+        WorkManager.getInstance(this)
+            .enqueueUniquePeriodicWork(
+                "daily_checklist_reset",
+                ExistingPeriodicWorkPolicy.UPDATE,
+                resetRequest
+            )
 
         val bottomNav = findViewById<BottomNavigationView>(R.id.navBnv)
         bottomNav.selectedItemId = R.id.homeIt
@@ -109,5 +132,17 @@ class MainActivity : ComponentActivity() {
 
             this.recyclerView.layoutManager = LinearLayoutManager(this)
         }
+    }
+
+    fun getDelayUntilMidnight(): Long {
+        val now = Calendar.getInstance()
+        val nextMidnight = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return nextMidnight.timeInMillis - now.timeInMillis
     }
 }
