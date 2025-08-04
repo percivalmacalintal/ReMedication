@@ -88,27 +88,27 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
     fun saveNewLog(itemId: Long, logId: Long, isCreated: Boolean, context: Context) {
         val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
         val editor = sharedPref.edit()
-        editor.putLong("logId_$itemId", logId)
-        editor.putBoolean("isLogCreated_$itemId", isCreated)
+        editor.putLong("checklist_logId_$itemId", logId)
+        editor.putBoolean("checklist_isLogCreated_$itemId", isCreated)
         editor.apply()
     }
 
     fun deleteLog(itemId: Long, context: Context) {
         val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
         val editor = sharedPref.edit()
-        editor.remove("logId_$itemId")
-        editor.remove("isLogCreated_$itemId")
+        editor.remove("checklist_logId_$itemId")
+        editor.remove("checklist_isLogCreated_$itemId")
         editor.apply()
     }
 
     fun getIsLogCreated(itemId: Long, context: Context): Boolean {
         val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
-        return sharedPref.getBoolean("isLogCreated_$itemId", false) == true
+        return sharedPref.getBoolean("checklist_isLogCreated_$itemId", false) == true
     }
 
     fun getLogId(itemId: Long, context: Context): Long {
         val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
-        return sharedPref.getLong("logId_$itemId", -1L)
+        return sharedPref.getLong("checklist_logId_$itemId", -1L)
     }
 
     private fun handleCheckboxChange(checklist: Checklist, position: Int, adapter: ChecklistAdapter, isChecked: Boolean) {

@@ -122,14 +122,14 @@ class SectionAdapter(private val sections: List<Section>) :
     fun saveNewLog(itemId: Long, logId: Long, isCreated: Boolean, context: Context) {
         val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
         val editor = sharedPref.edit()
-        editor.putLong("logId_$itemId", logId)
-        editor.putBoolean("isLogCreated_$itemId", isCreated)
+        editor.putLong("checklist_logId_$itemId", logId)
+        editor.putBoolean("checklist_isLogCreated_$itemId", isCreated)
         editor.apply()
     }
 
     fun getIsLogCreated(itemId: Long, context: Context): Boolean {
         val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
-        return sharedPref.getBoolean("isLogCreated_$itemId", false)
+        return sharedPref.getBoolean("checklist_isLogCreated_$itemId", false)
     }
 
     private fun calculateGlobalPosition(sectionIndex: Int, itemIndex: Int): Int {
