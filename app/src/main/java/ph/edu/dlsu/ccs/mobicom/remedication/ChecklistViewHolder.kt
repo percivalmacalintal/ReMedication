@@ -85,7 +85,7 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
         }
     }
 
-    fun insertLog(itemId: Long, logId: Long, isCreated: Boolean, context: Context) {
+    fun saveNewLog(itemId: Long, logId: Long, isCreated: Boolean, context: Context) {
         val sharedPref = context.getSharedPreferences("LogPreferences", Context.MODE_PRIVATE)
         val editor = sharedPref.edit()
         editor.putLong("logId_$itemId", logId)
@@ -122,46 +122,45 @@ class ChecklistViewHolder(itemView: View): ViewHolder(itemView) {
         val timeFormat = SimpleDateFormat("HH:mm:ss", java.util.Locale.getDefault())
 
         val isLogCreated = getIsLogCreated(checklist.id, itemView.context)
-
-        if (checklist.isChecked && !isLogCreated && !checklist.isOverdue) {
+        if (checklist.isChecked){
+            val logStatus = if (checklist.isOverdue) LogStatus.LATE else LogStatus.ONTIME
             executorService.execute {
                 val currentDate = Date()
                 val formattedDate = dateFormat.format(currentDate)
                 val formattedTime = timeFormat.format(currentDate)
-                val log = Log(
-                    formattedDate,
-                    formattedTime,
-                    mtv.text.toString(),
-                    dtv.text.toString(),
-                    false
-                )
-                val newId = myDbHelper.insertLog(log)
-                saveNewLog(checklist.id, newId, true, itemView.context)
-                android.util.Log.d("ChecklistViewHolder", "new Log Taken: $newId")
 
-                // Update UI on main thread
-                itemView.post {
-                    adapter.notifyItemChanged(position)
-                }
-            }
-        } else if (!checklist.isChecked && isLogCreated && !checklist.isOverdue) {
-            executorService.execute {
-                val logId = getLogId(checklist.id, itemView.context)
-                if (logId != -1L) {
-                    android.util.Log.d("ChecklistViewHolder", "Deleting Log with ID: $logId")
-                    myDbHelper.deleteLog(logId)
-                    deleteLog(checklist.id, itemView.context)
-                    android.util.Log.d("ChecklistViewHolder", "Log Deleted: $logId")
-
-                    // Update UI on main thread
-                    itemView.post {
-                        adapter.notifyItemChanged(position)
-                    }
+                if(isLogCreated) {
+                    val logId = getLogId(checklist.id, itemView.context)
+                    myDbHelper.updateLog(logId, formattedTime, logStatus)
+                    android.util.Log.d("ChecklistViewHolder", "Updated Log: $logId")
+                } else {
+                    val log = Log(
+                        formattedDate,   //now
+                        formattedTime,   //this time
+                        mtv.text.toString(),
+                        dtv.text.toString(),
+                        logStatus
+                    )
+                    val newId = myDbHelper.insertLog(log)
+                    saveNewLog(checklist.id, newId, true, itemView.context)
+                    android.util.Log.d("ChecklistViewHolder", "Inserted Log: $newId")
                 }
             }
         } else {
-            adapter.notifyItemChanged(position)
+            if (isLogCreated) {
+                executorService.execute {   //  delete log if unchecked
+                    val logId = getLogId(checklist.id, itemView.context)
+                    if (logId != -1L) {
+                        myDbHelper.deleteLog(logId)
+                        deleteLog(checklist.id, itemView.context)
+                        android.util.Log.d("ChecklistViewHolder", "Deleted Log: $logId")
+                    }
+                }
+            } else {
+                android.util.Log.d("ChecklistViewHolder", "Unchecked item: ${checklist.id}, with no log ")
+            }
         }
+        adapter.notifyItemChanged(position)
     }
 
     private fun showUncheckConfirmationDialog(checklist: Checklist, position: Int, adapter: ChecklistAdapter) {
